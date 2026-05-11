@@ -79,6 +79,36 @@ class ServicesPage extends StatelessWidget {
             ],
           ),
         ),
+        SectionPanel(
+          title: 'Launch sequence',
+          description:
+              'Each stage solves a different problem, so the project gains momentum without collapsing into random revisions and visual guesswork.',
+          child: LaunchTimeline(
+            stages: [
+              LaunchStageData(
+                phase: '01',
+                title: 'Signal Capture',
+                description:
+                    'We define positioning, audience expectations, offer logic, and what the first screen must immediately communicate.',
+                window: 'Strategy Window',
+              ),
+              LaunchStageData(
+                phase: '02',
+                title: 'System Build',
+                description:
+                    'We shape the layout language, content rhythm, section hierarchy, and component system across the core pages.',
+                window: 'Design + Structure',
+              ),
+              LaunchStageData(
+                phase: '03',
+                title: 'Launch Polish',
+                description:
+                    'We refine motion, responsiveness, CTA pacing, and final implementation details until the site feels deliberate.',
+                window: 'QA + Delivery',
+              ),
+            ],
+          ),
+        ),
         CtaBand(
           title: 'Want the full scope mapped page by page?',
           description:

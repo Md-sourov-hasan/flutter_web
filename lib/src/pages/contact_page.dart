@@ -67,6 +67,32 @@ class ContactPage extends StatelessWidget {
             ],
           ),
         ),
+        SectionPanel(
+          title: 'Response deck',
+          description:
+              'If the project feels like a fit, these are the signals that usually matter most before a proper kickoff conversation starts.',
+          child: ContactSignalDeck(
+            items: [
+              ContactSignalData(
+                title: 'RESPONSE MODE',
+                value: 'Fast Scope Read',
+                caption: 'You can usually expect an initial direction response before the conversation loses momentum.',
+              ),
+              ContactSignalData(
+                title: 'PROJECT WINDOW',
+                value: 'Focused Build Slots',
+                caption:
+                    'Best results happen when the messaging, page goals, and review loop are kept compact and intentional.',
+              ),
+              ContactSignalData(
+                title: 'BEST ENTRY',
+                value: 'Clear Brief > Better Site',
+                caption:
+                    'The sharper your current offer, audience, and problem statement, the better the first concept gets.',
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

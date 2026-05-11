@@ -1144,3 +1144,691 @@ class LargeFeatureList extends StatelessWidget {
     );
   }
 }
+
+class SignalLineData {
+  const SignalLineData({
+    required this.label,
+    required this.value,
+    required this.note,
+  });
+
+  final String label;
+  final String value;
+  final String note;
+}
+
+class SignalConsole extends StatelessWidget {
+  const SignalConsole({
+    super.key,
+    required this.headline,
+    required this.description,
+    required this.tags,
+    required this.lines,
+  });
+
+  final String headline;
+  final String description;
+  final List<String> tags;
+  final List<SignalLineData> lines;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: const Color(0xFF162235),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: AppTheme.lineLight),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1907111F),
+            blurRadius: 26,
+            offset: Offset(0, 14),
+          ),
+        ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 920;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  for (final color in const [
+                    Color(0xFFFF6D8C),
+                    Color(0xFFFFD166),
+                    Color(0xFF67FFB0),
+                  ]) ...[
+                    Container(
+                      width: 10,
+                      height: 10,
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: color,
+                      ),
+                    ),
+                  ],
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: AppTheme.lineLight),
+                    ),
+                    child: const Text(
+                      'SYSTEM ONLINE',
+                      style: TextStyle(
+                        color: AppTheme.accentSoft,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 26),
+              compact
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _SignalConsoleIntro(
+                          headline: headline,
+                          description: description,
+                          tags: tags,
+                        ),
+                        const SizedBox(height: 24),
+                        _SignalConsoleGrid(lines: lines),
+                      ],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 5,
+                          child: _SignalConsoleIntro(
+                            headline: headline,
+                            description: description,
+                            tags: tags,
+                          ),
+                        ),
+                        const SizedBox(width: 26),
+                        Expanded(
+                          flex: 6,
+                          child: _SignalConsoleGrid(lines: lines),
+                        ),
+                      ],
+                    ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _SignalConsoleIntro extends StatelessWidget {
+  const _SignalConsoleIntro({
+    required this.headline,
+    required this.description,
+    required this.tags,
+  });
+
+  final String headline;
+  final String description;
+  final List<String> tags;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          headline,
+          style: const TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 34,
+            height: 1.05,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 14),
+        Text(
+          description,
+          style: const TextStyle(
+            color: AppTheme.textMuted,
+            fontSize: 16,
+            height: 1.7,
+          ),
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (final tag in tags)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppTheme.lineLight),
+                ),
+                child: Text(
+                  tag,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _SignalConsoleGrid extends StatelessWidget {
+  const _SignalConsoleGrid({required this.lines});
+
+  final List<SignalLineData> lines;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (var i = 0; i < lines.length; i++) ...[
+          _HoverLift(
+            glowColor: AppTheme.accentSoft,
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0.07),
+                    AppTheme.accent.withValues(alpha: 0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppTheme.lineLight),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      gradient: const LinearGradient(
+                        colors: [AppTheme.accent, AppTheme.accentStrong],
+                      ),
+                    ),
+                    child: Text(
+                      '${i + 1}'.padLeft(2, '0'),
+                      style: const TextStyle(
+                        color: AppTheme.textDark,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          lines[i].label,
+                          style: const TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          lines[i].note,
+                          style: const TextStyle(
+                            color: AppTheme.textMuted,
+                            fontSize: 14,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Text(
+                    lines[i].value,
+                    style: const TextStyle(
+                      color: AppTheme.accentStrong,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (i != lines.length - 1) const SizedBox(height: 14),
+        ],
+      ],
+    );
+  }
+}
+
+class LaunchStageData {
+  const LaunchStageData({
+    required this.phase,
+    required this.title,
+    required this.description,
+    required this.window,
+  });
+
+  final String phase;
+  final String title;
+  final String description;
+  final String window;
+}
+
+class LaunchTimeline extends StatelessWidget {
+  const LaunchTimeline({
+    super.key,
+    required this.stages,
+  });
+
+  final List<LaunchStageData> stages;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 880;
+
+        return compact
+            ? Column(
+                children: [
+                  for (var i = 0; i < stages.length; i++) ...[
+                    _TimelineCard(
+                      data: stages[i],
+                      showConnector: i != stages.length - 1,
+                    ),
+                    if (i != stages.length - 1) const SizedBox(height: 18),
+                  ],
+                ],
+              )
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var i = 0; i < stages.length; i++) ...[
+                    Expanded(
+                      child: _TimelineCard(
+                        data: stages[i],
+                        showConnector: i != stages.length - 1,
+                        horizontal: true,
+                      ),
+                    ),
+                    if (i != stages.length - 1) const SizedBox(width: 18),
+                  ],
+                ],
+              );
+      },
+    );
+  }
+}
+
+class _TimelineCard extends StatelessWidget {
+  const _TimelineCard({
+    required this.data,
+    required this.showConnector,
+    this.horizontal = false,
+  });
+
+  final LaunchStageData data;
+  final bool showConnector;
+  final bool horizontal;
+
+  @override
+  Widget build(BuildContext context) {
+    return _HoverLift(
+      glowColor: AppTheme.accentSoft,
+      child: Container(
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          color: const Color(0xFF162235),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppTheme.lineLight),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: const LinearGradient(
+                      colors: [AppTheme.accent, AppTheme.accentStrong],
+                    ),
+                  ),
+                  child: Text(
+                    data.phase,
+                    style: const TextStyle(
+                      color: AppTheme.textDark,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    data.window,
+                    style: const TextStyle(
+                      color: AppTheme.accentSoft,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              data.title,
+              style: const TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              data.description,
+              style: const TextStyle(
+                color: AppTheme.textMuted,
+                fontSize: 15,
+                height: 1.65,
+              ),
+            ),
+            if (showConnector) ...[
+              const SizedBox(height: 18),
+              horizontal
+                  ? Container(
+                      height: 2,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.accent.withValues(alpha: 0.7),
+                            Colors.white.withValues(alpha: 0),
+                          ],
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Container(
+                        width: 2,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppTheme.accent.withValues(alpha: 0.7),
+                              Colors.white.withValues(alpha: 0),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ProofMatrixData {
+  const ProofMatrixData({
+    required this.title,
+    required this.before,
+    required this.after,
+    required this.uplift,
+  });
+
+  final String title;
+  final String before;
+  final String after;
+  final String uplift;
+}
+
+class ProofMatrix extends StatelessWidget {
+  const ProofMatrix({
+    super.key,
+    required this.items,
+  });
+
+  final List<ProofMatrixData> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth < 760 ? 1 : 2;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: items.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 18,
+            mainAxisSpacing: 18,
+            childAspectRatio: columns == 1 ? 1.45 : 1.18,
+          ),
+          itemBuilder: (context, index) => _HoverLift(
+            glowColor: AppTheme.accentStrong,
+            child: Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: const Color(0xFF162235),
+                borderRadius: BorderRadius.circular(26),
+                border: Border.all(color: AppTheme.lineLight),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    items[index].title,
+                    style: const TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  _ProofLine(
+                    label: 'Before',
+                    value: items[index].before,
+                    color: const Color(0xFFFF6D8C),
+                  ),
+                  const SizedBox(height: 12),
+                  _ProofLine(
+                    label: 'After',
+                    value: items[index].after,
+                    color: const Color(0xFF67FFB0),
+                  ),
+                  const Spacer(),
+                  const SizedBox(height: 18),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppTheme.accent, AppTheme.accentStrong],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      items[index].uplift,
+                      style: const TextStyle(
+                        color: AppTheme.textDark,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ProofLine extends StatelessWidget {
+  const _ProofLine({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppTheme.lineLight),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 15,
+              height: 1.55,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ContactSignalData {
+  const ContactSignalData({
+    required this.title,
+    required this.value,
+    required this.caption,
+  });
+
+  final String title;
+  final String value;
+  final String caption;
+}
+
+class ContactSignalDeck extends StatelessWidget {
+  const ContactSignalDeck({
+    super.key,
+    required this.items,
+  });
+
+  final List<ContactSignalData> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth < 760 ? 1 : 3;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: items.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: columns == 1 ? 2.4 : 1.1,
+          ),
+          itemBuilder: (context, index) => _HoverLift(
+            glowColor: AppTheme.accentStrong,
+            child: Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF162235), Color(0xFF1F2B41)],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppTheme.lineLight),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    items[index].title,
+                    style: const TextStyle(
+                      color: AppTheme.textMuted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    items[index].value,
+                    style: const TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 28,
+                      height: 1.05,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    items[index].caption,
+                    style: const TextStyle(
+                      color: AppTheme.textMuted,
+                      fontSize: 15,
+                      height: 1.55,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}

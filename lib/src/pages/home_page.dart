@@ -90,6 +90,39 @@ class HomePage extends StatelessWidget {
             ],
           ),
         ),
+        SectionPanel(
+          title: 'Inside the build signal.',
+          description:
+              'A more custom project usually feels different because the internal decisions are sharper, faster, and far more intentional than a template workflow.',
+          child: SignalConsole(
+            headline: 'The site is designed like a control system, not a page pile.',
+            description:
+                'We keep the messaging system, visual hierarchy, conversion flow, and implementation constraints visible together so the final website feels composed instead of accidental.',
+            tags: [
+              'Narrative Lock',
+              'Trust Density',
+              'Motion Control',
+              'Launch Logic',
+            ],
+            lines: [
+              SignalLineData(
+                label: 'Message priority',
+                value: 'LOCKED',
+                note: 'Hero, proof, and CTA order are shaped before decorative choices start diluting clarity.',
+              ),
+              SignalLineData(
+                label: 'Visual rhythm',
+                value: 'TUNED',
+                note: 'Cards, copy blocks, and negative space are paced to feel premium rather than crowded.',
+              ),
+              SignalLineData(
+                label: 'Implementation layer',
+                value: 'READY',
+                note: 'Reusable widgets and page routing stay aligned with the design direction from day one.',
+              ),
+            ],
+          ),
+        ),
         CtaBand(
           title: 'Need a site that instantly looks more credible?',
           description:
