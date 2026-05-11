@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../navigation/site_navigation.dart';
@@ -119,15 +121,124 @@ class SiteShell extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              hero,
-              for (final section in sections) ...[
+              ScrollReveal(
+                delay: const Duration(milliseconds: 40),
+                child: hero,
+              ),
+              for (var i = 0; i < sections.length; i++) ...[
                 const SizedBox(height: 26),
-                section,
+                ScrollReveal(
+                  delay: Duration(milliseconds: 120 + (i * 90)),
+                  child: sections[i],
+                ),
               ],
               const SizedBox(height: 26),
-              const _FooterBand(),
+              const ScrollReveal(
+                delay: Duration(milliseconds: 260),
+                child: _FooterBand(),
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class ScrollReveal extends StatefulWidget {
+  const ScrollReveal({
+    super.key,
+    required this.child,
+    this.delay = Duration.zero,
+    this.duration = const Duration(milliseconds: 700),
+    this.curve = Curves.easeOutCubic,
+    this.slideOffset = const Offset(0, 0.12),
+    this.triggerFraction = 0.92,
+  });
+
+  final Widget child;
+  final Duration delay;
+  final Duration duration;
+  final Curve curve;
+  final Offset slideOffset;
+  final double triggerFraction;
+
+  @override
+  State<ScrollReveal> createState() => _ScrollRevealState();
+}
+
+class _ScrollRevealState extends State<ScrollReveal> {
+  final GlobalKey _childKey = GlobalKey();
+  ScrollPosition? _scrollPosition;
+  Timer? _revealTimer;
+  bool _revealed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkVisibility());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final nextPosition = Scrollable.maybeOf(context)?.position;
+    if (_scrollPosition == nextPosition) {
+      return;
+    }
+
+    _scrollPosition?.removeListener(_checkVisibility);
+    _scrollPosition = nextPosition;
+    _scrollPosition?.addListener(_checkVisibility);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkVisibility());
+  }
+
+  @override
+  void dispose() {
+    _scrollPosition?.removeListener(_checkVisibility);
+    _revealTimer?.cancel();
+    super.dispose();
+  }
+
+  void _checkVisibility() {
+    if (_revealed || !mounted) {
+      return;
+    }
+
+    final renderObject = _childKey.currentContext?.findRenderObject();
+    if (renderObject is! RenderBox || !renderObject.hasSize) {
+      return;
+    }
+
+    final viewportHeight = MediaQuery.sizeOf(context).height;
+    final top = renderObject.localToGlobal(Offset.zero).dy;
+    if (top > viewportHeight * widget.triggerFraction) {
+      return;
+    }
+
+    _scrollPosition?.removeListener(_checkVisibility);
+    _revealTimer?.cancel();
+    _revealTimer = Timer(widget.delay, () {
+      if (!mounted || _revealed) {
+        return;
+      }
+      setState(() => _revealed = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return KeyedSubtree(
+      key: _childKey,
+      child: AnimatedOpacity(
+        opacity: _revealed ? 1 : 0,
+        duration: widget.duration,
+        curve: widget.curve,
+        child: AnimatedSlide(
+          offset: _revealed ? Offset.zero : widget.slideOffset,
+          duration: widget.duration,
+          curve: widget.curve,
+          child: widget.child,
         ),
       ),
     );
