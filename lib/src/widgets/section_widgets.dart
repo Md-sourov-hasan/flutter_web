@@ -293,95 +293,98 @@ class FeatureCard extends StatelessWidget {
     final bg = darkText ? Colors.white.withValues(alpha: 0.58) : const Color(0xB3162235);
     final border = darkText ? const Color(0x1407111F) : AppTheme.lineLight;
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: border),
-        image: data.imageAsset != null
-            ? DecorationImage(
-                image: AssetImage(data.imageAsset!),
-                fit: BoxFit.cover,
-                filterQuality: FilterQuality.high,
-              )
-            : null,
-        boxShadow: darkText
-            ? const [
-                BoxShadow(
-                  color: Color(0x1207111F),
-                  blurRadius: 22,
-                  offset: Offset(0, 12),
+    return _HoverLift(
+      glowColor: darkText ? AppTheme.accentStrong : AppTheme.accentSoft,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(26),
+          border: Border.all(color: border),
+          image: data.imageAsset != null
+              ? DecorationImage(
+                  image: AssetImage(data.imageAsset!),
+                  fit: BoxFit.cover,
+                  filterQuality: FilterQuality.high,
+                )
+              : null,
+          boxShadow: darkText
+              ? const [
+                  BoxShadow(
+                    color: Color(0x1207111F),
+                    blurRadius: 22,
+                    offset: Offset(0, 12),
+                  ),
+                ]
+              : const [
+                  BoxShadow(
+                    color: Color(0x1A07111F),
+                    blurRadius: 24,
+                    offset: Offset(0, 12),
+                  ),
+                ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (data.kicker != null) ...[
+              Text(
+                data.kicker!,
+                style: const TextStyle(
+                  color: AppTheme.accent,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
                 ),
-              ]
-            : const [
-                BoxShadow(
-                  color: Color(0x1A07111F),
-                  blurRadius: 24,
-                  offset: Offset(0, 12),
-                ),
-              ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (data.kicker != null) ...[
+              ),
+              const SizedBox(height: 12),
+            ],
             Text(
-              data.kicker!,
-              style: const TextStyle(
-                color: AppTheme.accent,
-                fontSize: 13,
+              data.title,
+              style: TextStyle(
+                color: data.imageAsset != null ? Colors.white : titleColor,
+                fontSize: 24,
+                height: 1.12,
                 fontWeight: FontWeight.w800,
+                shadows: data.imageAsset != null
+                    ? const [
+                        Shadow(
+                          color: Colors.black87,
+                          blurRadius: 16,
+                        ),
+                        Shadow(
+                          color: Colors.black54,
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
+                        ),
+                      ]
+                    : null,
               ),
             ),
             const SizedBox(height: 12),
+            Text(
+              data.description,
+              style: TextStyle(
+                color: data.imageAsset != null ? Colors.white : bodyColor,
+                fontSize: 15,
+                height: 1.6,
+                fontWeight: data.imageAsset != null ? FontWeight.w500 : FontWeight.normal,
+                shadows: data.imageAsset != null
+                    ? const [
+                        Shadow(
+                          color: Colors.black87,
+                          blurRadius: 16,
+                        ),
+                        Shadow(
+                          color: Colors.black54,
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
+                        ),
+                      ]
+                    : null,
+              ),
+            ),
           ],
-          Text(
-            data.title,
-            style: TextStyle(
-              color: data.imageAsset != null ? Colors.white : titleColor,
-              fontSize: 24,
-              height: 1.12,
-              fontWeight: FontWeight.w800,
-              shadows: data.imageAsset != null
-                  ? const [
-                      Shadow(
-                        color: Colors.black87,
-                        blurRadius: 16,
-                      ),
-                      Shadow(
-                        color: Colors.black54,
-                        blurRadius: 4,
-                        offset: Offset(0, 1),
-                      ),
-                    ]
-                  : null,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            data.description,
-            style: TextStyle(
-              color: data.imageAsset != null ? Colors.white : bodyColor,
-              fontSize: 15,
-              height: 1.6,
-              fontWeight: data.imageAsset != null ? FontWeight.w500 : FontWeight.normal,
-              shadows: data.imageAsset != null
-                  ? const [
-                      Shadow(
-                        color: Colors.black87,
-                        blurRadius: 16,
-                      ),
-                      Shadow(
-                        color: Colors.black54,
-                        blurRadius: 4,
-                        offset: Offset(0, 1),
-                      ),
-                    ]
-                  : null,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -395,18 +398,15 @@ class ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        elevation: 0,
-        backgroundColor: AppTheme.accent,
-        foregroundColor: AppTheme.textDark,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      ),
+    return _FuturisticButtonShell(
+      onTap: onTap,
+      filled: true,
       child: Text(
         label,
-        style: const TextStyle(fontWeight: FontWeight.w800),
+        style: const TextStyle(
+          fontWeight: FontWeight.w800,
+          color: AppTheme.textDark,
+        ),
       ),
     );
   }
@@ -420,17 +420,15 @@ class GhostButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: AppTheme.accentSoft,
-        side: BorderSide(color: AppTheme.accent.withValues(alpha: 0.22)),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      ),
+    return _FuturisticButtonShell(
+      onTap: onTap,
+      filled: false,
       child: Text(
         label,
-        style: const TextStyle(fontWeight: FontWeight.w800),
+        style: const TextStyle(
+          fontWeight: FontWeight.w800,
+          color: AppTheme.accentSoft,
+        ),
       ),
     );
   }
@@ -469,49 +467,206 @@ class MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0x26FFF4E8), Color(0x14FFFFFF)],
-        ),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Color(0x26FFE1BD)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1807111F),
-            blurRadius: 18,
-            offset: Offset(0, 10),
+    return _HoverLift(
+      glowColor: AppTheme.accentStrong,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0x26FFF4E8), Color(0x14FFFFFF)],
           ),
-        ],
-      ),
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: Alignment.centerLeft,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              data.value,
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
-                fontSize: 30,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              data.label,
-              style: const TextStyle(
-                color: Color(0xFFD8E0EC),
-                fontSize: 14,
-                height: 1.45,
-              ),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: const Color(0x26FFE1BD)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x1807111F),
+              blurRadius: 18,
+              offset: Offset(0, 10),
             ),
           ],
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                data.value,
+                style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                data.label,
+                style: const TextStyle(
+                  color: Color(0xFFD8E0EC),
+                  fontSize: 14,
+                  height: 1.45,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FuturisticButtonShell extends StatefulWidget {
+  const _FuturisticButtonShell({
+    required this.onTap,
+    required this.child,
+    required this.filled,
+  });
+
+  final VoidCallback onTap;
+  final Widget child;
+  final bool filled;
+
+  @override
+  State<_FuturisticButtonShell> createState() => _FuturisticButtonShellState();
+}
+
+class _FuturisticButtonShellState extends State<_FuturisticButtonShell> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.circular(18);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedScale(
+        scale: _hovered ? 1.02 : 1,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            borderRadius: borderRadius,
+            boxShadow: [
+              BoxShadow(
+                color: (widget.filled ? AppTheme.accent : AppTheme.accentSoft).withValues(alpha: _hovered ? 0.24 : 0.1),
+                blurRadius: _hovered ? 28 : 16,
+                spreadRadius: _hovered ? 1 : 0,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: borderRadius,
+            child: Stack(
+              children: [
+                Material(
+                  color: Colors.transparent,
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      gradient: widget.filled
+                          ? const LinearGradient(
+                              colors: [AppTheme.accent, AppTheme.accentStrong],
+                            )
+                          : LinearGradient(
+                              colors: [
+                                const Color(0x3DFFFFFF),
+                                AppTheme.accent.withValues(alpha: 0.08),
+                              ],
+                            ),
+                      border: Border.all(
+                        color: widget.filled
+                            ? Colors.white.withValues(alpha: 0.16)
+                            : AppTheme.accent.withValues(alpha: 0.22),
+                      ),
+                    ),
+                    child: InkWell(
+                      onTap: widget.onTap,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                        child: Center(child: widget.child),
+                      ),
+                    ),
+                  ),
+                ),
+                IgnorePointer(
+                  child: AnimatedAlign(
+                    duration: const Duration(milliseconds: 520),
+                    curve: Curves.easeOutCubic,
+                    alignment: _hovered ? const Alignment(1.4, 0) : const Alignment(-1.4, 0),
+                    child: Container(
+                      width: 44,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.white.withValues(alpha: 0),
+                            Colors.white.withValues(alpha: widget.filled ? 0.26 : 0.12),
+                            Colors.white.withValues(alpha: 0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HoverLift extends StatefulWidget {
+  const _HoverLift({
+    required this.child,
+    required this.glowColor,
+  });
+
+  final Widget child;
+  final Color glowColor;
+
+  @override
+  State<_HoverLift> createState() => _HoverLiftState();
+}
+
+class _HoverLiftState extends State<_HoverLift> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedScale(
+        scale: _hovered ? 1.015 : 1,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        child: AnimatedSlide(
+          offset: _hovered ? const Offset(0, -0.018) : Offset.zero,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: widget.glowColor.withValues(alpha: _hovered ? 0.18 : 0),
+                  blurRadius: _hovered ? 30 : 0,
+                  spreadRadius: _hovered ? 1 : 0,
+                ),
+              ],
+            ),
+            child: widget.child,
+          ),
         ),
       ),
     );

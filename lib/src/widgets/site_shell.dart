@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -93,8 +94,18 @@ class _SiteShellFrame extends StatefulWidget {
   State<_SiteShellFrame> createState() => _SiteShellFrameState();
 }
 
-class _SiteShellFrameState extends State<_SiteShellFrame> {
+class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProviderStateMixin {
+  late final AnimationController _ambientController;
   bool _navVisible = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _ambientController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..forward();
+  }
 
   bool _handleScrollNotification(UserScrollNotification notification) {
     if (notification.depth != 0) {
@@ -120,6 +131,12 @@ class _SiteShellFrameState extends State<_SiteShellFrame> {
       return;
     }
     setState(() => _navVisible = visible);
+  }
+
+  @override
+  void dispose() {
+    _ambientController.dispose();
+    super.dispose();
   }
 
   @override
@@ -168,26 +185,53 @@ class _SiteShellFrameState extends State<_SiteShellFrame> {
                   ),
                 ),
               ),
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: _AmbientMotionLayer(
+                    animation: _ambientController,
+                  ),
+                ),
+              ),
               Positioned(
                 top: -140,
                 right: -60,
-                child: _GlowOrb(
-                  size: 320,
-                  colors: [
-                    widget.primaryGlow.withValues(alpha: 0.28),
-                    widget.primaryGlow.withValues(alpha: 0.0),
-                  ],
+                child: AnimatedBuilder(
+                  animation: _ambientController,
+                  builder: (context, child) {
+                    final y = math.sin(_ambientController.value * math.pi * 2) * 20;
+                    return Transform.translate(
+                      offset: Offset(0, y),
+                      child: child,
+                    );
+                  },
+                  child: _GlowOrb(
+                    size: 320,
+                    colors: [
+                      widget.primaryGlow.withValues(alpha: 0.28),
+                      widget.primaryGlow.withValues(alpha: 0.0),
+                    ],
+                  ),
                 ),
               ),
               Positioned(
                 left: -100,
                 top: 220,
-                child: _GlowOrb(
-                  size: 240,
-                  colors: [
-                    widget.secondaryGlow.withValues(alpha: 0.15),
-                    widget.secondaryGlow.withValues(alpha: 0.0),
-                  ],
+                child: AnimatedBuilder(
+                  animation: _ambientController,
+                  builder: (context, child) {
+                    final y = math.cos(_ambientController.value * math.pi * 2) * 16;
+                    return Transform.translate(
+                      offset: Offset(0, y),
+                      child: child,
+                    );
+                  },
+                  child: _GlowOrb(
+                    size: 240,
+                    colors: [
+                      widget.secondaryGlow.withValues(alpha: 0.15),
+                      widget.secondaryGlow.withValues(alpha: 0.0),
+                    ],
+                  ),
                 ),
               ),
               NotificationListener<UserScrollNotification>(
@@ -243,6 +287,87 @@ class _SiteShellFrameState extends State<_SiteShellFrame> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AmbientMotionLayer extends StatelessWidget {
+  const _AmbientMotionLayer({required this.animation});
+
+  final Animation<double> animation;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        final progress = animation.value;
+        final beamX = (progress * 1.6) - 0.35;
+        final beamY = math.sin(progress * math.pi * 2) * 34;
+        final orbOffset = math.cos(progress * math.pi * 2) * 22;
+
+        return Stack(
+          children: [
+            Positioned(
+              top: 90 + orbOffset,
+              right: 80,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppTheme.accentStrong.withValues(alpha: 0.12),
+                      AppTheme.accentStrong.withValues(alpha: 0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Transform.translate(
+              offset: Offset(beamX * MediaQuery.sizeOf(context).width, beamY),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Transform.rotate(
+                  angle: -0.42,
+                  child: Container(
+                    width: 140,
+                    height: MediaQuery.sizeOf(context).height * 1.25,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withValues(alpha: 0),
+                          Colors.white.withValues(alpha: 0.05),
+                          AppTheme.accentSoft.withValues(alpha: 0.18),
+                          Colors.white.withValues(alpha: 0.04),
+                          Colors.white.withValues(alpha: 0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppTheme.accentSoft.withValues(alpha: 0.03),
+                      Colors.transparent,
+                      AppTheme.accent.withValues(alpha: 0.025),
+                    ],
+                    stops: const [0, 0.45, 1],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
