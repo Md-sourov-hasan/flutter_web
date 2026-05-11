@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../navigation/site_navigation.dart';
 import '../theme/app_theme.dart';
@@ -34,81 +35,11 @@ class SiteShell extends StatelessWidget {
   }
 
   Widget buildFrame({Widget? content}) {
-    return Scaffold(
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppTheme.background, AppTheme.backgroundSoft],
-          ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(0.88, -0.92),
-                        radius: 0.34,
-                        colors: [primaryGlow.withValues(alpha: 0.26), primaryGlow.withValues(alpha: 0.0)],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(-0.95, -0.1),
-                        radius: 0.28,
-                        colors: [secondaryGlow.withValues(alpha: 0.21), secondaryGlow.withValues(alpha: 0.0)],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: -140,
-                right: -60,
-                child: _GlowOrb(
-                  size: 320,
-                  colors: [primaryGlow.withValues(alpha: 0.28), primaryGlow.withValues(alpha: 0.0)],
-                ),
-              ),
-              Positioned(
-                left: -100,
-                top: 220,
-                child: _GlowOrb(
-                  size: 240,
-                  colors: [secondaryGlow.withValues(alpha: 0.15), secondaryGlow.withValues(alpha: 0.0)],
-                ),
-              ),
-              Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1180),
-                        child: Material(
-                          type: MaterialType.transparency,
-                          child: _TopNavigation(currentRoute: currentRoute),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(child: content ?? buildScrollableContent()),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+    return _SiteShellFrame(
+      currentRoute: currentRoute,
+      primaryGlow: primaryGlow,
+      secondaryGlow: secondaryGlow,
+      content: content ?? buildScrollableContent(),
     );
   }
 
@@ -136,6 +67,177 @@ class SiteShell extends StatelessWidget {
               const ScrollReveal(
                 delay: Duration(milliseconds: 260),
                 child: _FooterBand(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SiteShellFrame extends StatefulWidget {
+  const _SiteShellFrame({
+    required this.currentRoute,
+    required this.primaryGlow,
+    required this.secondaryGlow,
+    required this.content,
+  });
+
+  final String currentRoute;
+  final Color primaryGlow;
+  final Color secondaryGlow;
+  final Widget content;
+
+  @override
+  State<_SiteShellFrame> createState() => _SiteShellFrameState();
+}
+
+class _SiteShellFrameState extends State<_SiteShellFrame> {
+  bool _navVisible = true;
+
+  bool _handleScrollNotification(UserScrollNotification notification) {
+    if (notification.depth != 0) {
+      return false;
+    }
+
+    if (notification.metrics.pixels <= 8) {
+      _setNavVisible(true);
+      return false;
+    }
+
+    if (notification.direction == ScrollDirection.forward) {
+      _setNavVisible(true);
+    } else if (notification.direction == ScrollDirection.reverse) {
+      _setNavVisible(false);
+    }
+
+    return false;
+  }
+
+  void _setNavVisible(bool visible) {
+    if (_navVisible == visible || !mounted) {
+      return;
+    }
+    setState(() => _navVisible = visible);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppTheme.background, AppTheme.backgroundSoft],
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: const Alignment(0.88, -0.92),
+                        radius: 0.34,
+                        colors: [
+                          widget.primaryGlow.withValues(alpha: 0.26),
+                          widget.primaryGlow.withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: const Alignment(-0.95, -0.1),
+                        radius: 0.28,
+                        colors: [
+                          widget.secondaryGlow.withValues(alpha: 0.21),
+                          widget.secondaryGlow.withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: -140,
+                right: -60,
+                child: _GlowOrb(
+                  size: 320,
+                  colors: [
+                    widget.primaryGlow.withValues(alpha: 0.28),
+                    widget.primaryGlow.withValues(alpha: 0.0),
+                  ],
+                ),
+              ),
+              Positioned(
+                left: -100,
+                top: 220,
+                child: _GlowOrb(
+                  size: 240,
+                  colors: [
+                    widget.secondaryGlow.withValues(alpha: 0.15),
+                    widget.secondaryGlow.withValues(alpha: 0.0),
+                  ],
+                ),
+              ),
+              NotificationListener<UserScrollNotification>(
+                onNotification: _handleScrollNotification,
+                child: Column(
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 240),
+                      reverseDuration: const Duration(milliseconds: 200),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (child, animation) {
+                        final offsetAnimation = Tween<Offset>(
+                          begin: const Offset(0, -0.18),
+                          end: Offset.zero,
+                        ).animate(animation);
+
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SizeTransition(
+                            sizeFactor: animation,
+                            axisAlignment: -1,
+                            child: SlideTransition(
+                              position: offsetAnimation,
+                              child: child,
+                            ),
+                          ),
+                        );
+                      },
+                      child: _navVisible
+                          ? Padding(
+                              key: const ValueKey('nav-visible'),
+                              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                              child: Center(
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 1180),
+                                  child: Material(
+                                    type: MaterialType.transparency,
+                                    child: _TopNavigation(currentRoute: widget.currentRoute),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : const SizedBox(
+                              key: ValueKey('nav-hidden'),
+                            ),
+                    ),
+                    Expanded(child: widget.content),
+                  ],
+                ),
               ),
             ],
           ),
