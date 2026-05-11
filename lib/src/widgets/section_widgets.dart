@@ -2144,3 +2144,267 @@ class _ModeDeliverables extends StatelessWidget {
     );
   }
 }
+
+class ComparisonSceneData {
+  const ComparisonSceneData({
+    required this.title,
+    required this.beforeTitle,
+    required this.beforeText,
+    required this.afterTitle,
+    required this.afterText,
+  });
+
+  final String title;
+  final String beforeTitle;
+  final String beforeText;
+  final String afterTitle;
+  final String afterText;
+}
+
+class ComparisonWorkbench extends StatefulWidget {
+  const ComparisonWorkbench({
+    super.key,
+    required this.scenes,
+  });
+
+  final List<ComparisonSceneData> scenes;
+
+  @override
+  State<ComparisonWorkbench> createState() => _ComparisonWorkbenchState();
+}
+
+class _ComparisonWorkbenchState extends State<ComparisonWorkbench> {
+  int _selectedIndex = 0;
+  double _split = 0.56;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = widget.scenes[_selectedIndex];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (var i = 0; i < widget.scenes.length; i++)
+              _ModeChip(
+                label: widget.scenes[i].title,
+                selected: _selectedIndex == i,
+                onTap: () => setState(() => _selectedIndex = i),
+              ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return Container(
+              height: constraints.maxWidth < 760 ? 420 : 330,
+              decoration: BoxDecoration(
+                color: const Color(0xFF162235),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: AppTheme.lineLight),
+              ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _ComparisonPanel(
+                            eyebrow: 'Before',
+                            title: selected.beforeTitle,
+                            description: selected.beforeText,
+                            accent: const Color(0xFFFF6D8C),
+                          ),
+                        ),
+                        Expanded(
+                          child: _ComparisonPanel(
+                            eyebrow: 'After',
+                            title: selected.afterTitle,
+                            description: selected.afterText,
+                            accent: const Color(0xFF67FFB0),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: (_split * 1000).round(),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.white.withValues(alpha: 0.05),
+                                    Colors.white.withValues(alpha: 0),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1000 - (_split * 1000).round(),
+                            child: const SizedBox(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: (_split.clamp(0.12, 0.88) * constraints.maxWidth) - 18,
+                    top: 0,
+                    bottom: 0,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            width: 2,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  AppTheme.accentStrong.withValues(alpha: 0),
+                                  AppTheme.accentStrong,
+                                  AppTheme.accentStrong.withValues(alpha: 0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 36,
+                          height: 36,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [AppTheme.accent, AppTheme.accentStrong],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.accent.withValues(alpha: 0.3),
+                                blurRadius: 20,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.compare_arrows_rounded,
+                            color: AppTheme.textDark,
+                            size: 18,
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            width: 2,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  AppTheme.accentStrong.withValues(alpha: 0),
+                                  AppTheme.accentStrong,
+                                  AppTheme.accentStrong.withValues(alpha: 0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    left: 24,
+                    right: 24,
+                    bottom: 18,
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 4,
+                        activeTrackColor: AppTheme.accentStrong,
+                        inactiveTrackColor: Colors.white.withValues(alpha: 0.14),
+                        thumbColor: AppTheme.accentStrong,
+                        overlayColor: AppTheme.accent.withValues(alpha: 0.14),
+                      ),
+                      child: Slider(
+                        value: _split,
+                        onChanged: (value) => setState(() => _split = value),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _ComparisonPanel extends StatelessWidget {
+  const _ComparisonPanel({
+    required this.eyebrow,
+    required this.title,
+    required this.description,
+    required this.accent,
+  });
+
+  final String eyebrow;
+  final String title;
+  final String description;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 70),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              eyebrow,
+              style: TextStyle(
+                color: accent,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.9,
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 28,
+              height: 1.08,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            description,
+            style: const TextStyle(
+              color: AppTheme.textMuted,
+              fontSize: 15,
+              height: 1.65,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

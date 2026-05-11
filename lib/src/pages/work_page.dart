@@ -34,7 +34,7 @@ class WorkPage extends StatelessWidget {
         rightDescription: 'Clear examples of how an improved design language changes the perception of value.',
         rightColors: [Color(0x5CFF679A), Color(0xFF2B313E)],
       ),
-      sections: const [
+      sections: [
         SectionPanel(
           title: 'Example repositioning directions',
           description:
@@ -94,6 +94,42 @@ class WorkPage extends StatelessWidget {
                 after:
                     'Connected narrative flow across hero, services, proof, and contact made the brand feel complete.',
                 uplift: 'Whole site feels like one brand',
+              ),
+            ],
+          ),
+        ),
+        SectionPanel(
+          title: 'Interactive comparison lab',
+          description:
+              'Use the slider to compare how the same offer feels before and after the repositioning system is cleaned up.',
+          child: ComparisonWorkbench(
+            scenes: [
+              ComparisonSceneData(
+                title: 'Consulting',
+                beforeTitle: 'Vague opener, slow trust',
+                beforeText:
+                    'The visitor gets generic language, weak proof hierarchy, and no strong reason to believe the advisor is unusually capable.',
+                afterTitle: 'Sharper promise, faster authority',
+                afterText:
+                    'The first screen anchors the offer, authority lands earlier, and the call to action feels like the natural next move.',
+              ),
+              ComparisonSceneData(
+                title: 'Creative Studio',
+                beforeTitle: 'Too many ideas at once',
+                beforeText:
+                    'Visual clutter and mixed priorities make the creative quality feel less deliberate than it actually is.',
+                afterTitle: 'Editorial rhythm, premium calm',
+                afterText:
+                    'Cleaner pacing, more margin, and stronger visual sequencing make the work feel curated and more expensive.',
+              ),
+              ComparisonSceneData(
+                title: 'B2B Product',
+                beforeTitle: 'Technical but emotionally flat',
+                beforeText:
+                    'Details show up before confidence, so visitors understand features without fully trusting the company behind them.',
+                afterTitle: 'Proof-first and easier to trust',
+                afterText:
+                    'Trust signals, product framing, and value explanation now reinforce each other instead of competing for attention.',
               ),
             ],
           ),
