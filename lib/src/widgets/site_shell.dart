@@ -98,7 +98,6 @@ class _SiteShellFrame extends StatefulWidget {
 class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProviderStateMixin {
   late final AnimationController _ambientController;
   bool _navVisible = true;
-  bool _commandPanelOpen = false;
   bool _pointerVisible = false;
   Offset _pointerPosition = Offset.zero;
   double _scrollProgress = 0;
@@ -146,13 +145,6 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
     setState(() => _navVisible = visible);
   }
 
-  void _toggleCommandPanel() {
-    if (!mounted) {
-      return;
-    }
-    setState(() => _commandPanelOpen = !_commandPanelOpen);
-  }
-
   void _handlePointerHover(PointerHoverEvent event) {
     if (!mounted) {
       return;
@@ -180,7 +172,6 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
 
   @override
   Widget build(BuildContext context) {
-    final shellSignal = _resolveShellSignal(widget.currentRoute);
     final currentLabel = SiteShell.navItems
         .firstWhere(
           (item) => item.route == widget.currentRoute,
@@ -345,23 +336,6 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
                     ),
                   ),
                 Positioned(
-                  left: 18,
-                  bottom: 18,
-                  child: _CommandPanelToggle(
-                    open: _commandPanelOpen,
-                    onTap: _toggleCommandPanel,
-                  ),
-                ),
-                Positioned(
-                  left: 18,
-                  bottom: 86,
-                  child: _ShellCommandPanel(
-                    open: _commandPanelOpen,
-                    signal: shellSignal,
-                    currentRoute: widget.currentRoute,
-                  ),
-                ),
-                Positioned(
                   right: 18,
                   bottom: 18,
                   child: _RouteSignalDock(
@@ -378,250 +352,6 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
                       color: widget.primaryGlow,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-_ShellSignal _resolveShellSignal(String route) {
-  return switch (route) {
-    '/services' => const _ShellSignal(
-      title: 'System Build Active',
-      caption: 'Current route is tuned around structure, scope logic, and implementation planning.',
-      points: [
-        'Positioning sequence is being mapped.',
-        'Page architecture is the main UI signal here.',
-        'Use the route chips to jump between proof and contact.',
-      ],
-    ),
-    '/work' => const _ShellSignal(
-      title: 'Proof Layer Active',
-      caption: 'This route is focused on perception shifts and before/after trust movement.',
-      points: [
-        'Compare structure shifts in the work lab.',
-        'Notice how proof appears earlier in the flow.',
-        'Use the dock to jump back to services or contact.',
-      ],
-    ),
-    '/contact' => const _ShellSignal(
-      title: 'Conversation Layer Active',
-      caption: 'This route is tuned for faster project fit decisions and clearer inquiry entry.',
-      points: [
-        'Try the scope simulator to frame the first call.',
-        'Response deck shows the expected engagement signals.',
-        'Use direct paths for faster follow-up.',
-      ],
-    ),
-    _ => const _ShellSignal(
-      title: 'Narrative Core Active',
-      caption: 'Home is optimized around first impression, visual rhythm, and category-shift positioning.',
-      points: [
-        'Signal console shows the internal build logic.',
-        'Scroll progress rail mirrors page pacing.',
-        'Use route dock for a guided walkthrough.',
-      ],
-    ),
-  };
-}
-
-class _ShellSignal {
-  const _ShellSignal({
-    required this.title,
-    required this.caption,
-    required this.points,
-  });
-
-  final String title;
-  final String caption;
-  final List<String> points;
-}
-
-class _CommandPanelToggle extends StatefulWidget {
-  const _CommandPanelToggle({
-    required this.open,
-    required this.onTap,
-  });
-
-  final bool open;
-  final VoidCallback onTap;
-
-  @override
-  State<_CommandPanelToggle> createState() => _CommandPanelToggleState();
-}
-
-class _CommandPanelToggleState extends State<_CommandPanelToggle> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: const Color(0xD9162235),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppTheme.lineLight),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.accent.withValues(alpha: _hovered ? 0.22 : 0.1),
-                blurRadius: _hovered ? 28 : 16,
-                offset: const Offset(0, 12),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                widget.open ? Icons.close_rounded : Icons.tune_rounded,
-                size: 18,
-                color: AppTheme.accentSoft,
-              ),
-              const SizedBox(width: 10),
-              Text(
-                widget.open ? 'Close Panel' : 'Signal Panel',
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ShellCommandPanel extends StatelessWidget {
-  const _ShellCommandPanel({
-    required this.open,
-    required this.signal,
-    required this.currentRoute,
-  });
-
-  final bool open;
-  final _ShellSignal signal;
-  final String currentRoute;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      ignoring: !open,
-      child: AnimatedSlide(
-        offset: open ? Offset.zero : const Offset(-0.08, 0.08),
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        child: AnimatedOpacity(
-          opacity: open ? 1 : 0,
-          duration: const Duration(milliseconds: 180),
-          child: Container(
-            width: 360,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xE1162235),
-              borderRadius: BorderRadius.circular(26),
-              border: Border.all(color: AppTheme.lineLight),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x2607111F),
-                  blurRadius: 30,
-                  offset: Offset(0, 18),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Row(
-                  children: [
-                    Icon(
-                      Icons.space_dashboard_rounded,
-                      color: AppTheme.accentStrong,
-                      size: 18,
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      'Route Intelligence',
-                      style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  signal.title,
-                  style: const TextStyle(
-                    color: AppTheme.accentSoft,
-                    fontSize: 24,
-                    height: 1.08,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  signal.caption,
-                  style: const TextStyle(
-                    color: AppTheme.textMuted,
-                    fontSize: 14,
-                    height: 1.6,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                for (final point in signal.points) ...[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        margin: const EdgeInsets.only(top: 7),
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppTheme.accentStrong,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          point,
-                          style: const TextStyle(
-                            color: AppTheme.textMuted,
-                            fontSize: 13,
-                            height: 1.55,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (point != signal.points.last) const SizedBox(height: 10),
-                ],
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final item in SiteShell.navItems)
-                      _DockRouteChip(
-                        label: item.label,
-                        selected: currentRoute == item.route,
-                        onTap: () => navigateToRoute(context, item.route),
-                      ),
-                  ],
                 ),
               ],
             ),
