@@ -20,7 +20,7 @@ class ContactPage extends StatelessWidget {
         description:
             'If you want a professional multi-page Flutter website with a normal app structure, this is where we define the scope, timeline, and priority pages.',
       ),
-      sections: const [
+      sections: [
         SectionPanel(
           title: 'Project fit',
           description:
@@ -89,6 +89,49 @@ class ContactPage extends StatelessWidget {
                 value: 'Clear Brief > Better Site',
                 caption:
                     'The sharper your current offer, audience, and problem statement, the better the first concept gets.',
+              ),
+            ],
+          ),
+        ),
+        SectionPanel(
+          title: 'Scope simulator',
+          description:
+              'Pick the kind of engagement that feels closest to what you need. It helps shape the first conversation faster and more clearly.',
+          tinted: true,
+          child: InquiryModeLab(
+            modes: [
+              InquiryModeData(
+                label: 'Fast Launch',
+                title: 'A fast-moving landing experience with a sharper first impression.',
+                timeline: 'Best for compressed launch windows',
+                focus: 'Hero clarity, trust placement, and CTA momentum',
+                deliverables: [
+                  'A strong opening screen that communicates value immediately.',
+                  'Focused section ordering for one main conversion goal.',
+                  'Quick polish layer for spacing, contrast, and motion.',
+                ],
+              ),
+              InquiryModeData(
+                label: 'Full System',
+                title: 'A proper multi-page brand system built to feel established.',
+                timeline: 'Best for broader repositioning work',
+                focus: 'Narrative, page flow, component system, and routing',
+                deliverables: [
+                  'Connected homepage, services, proof, and contact experience.',
+                  'Reusable widget system with cleaner visual rhythm.',
+                  'A site structure that scales beyond a one-page brochure feel.',
+                ],
+              ),
+              InquiryModeData(
+                label: 'Refresh',
+                title: 'A strategic visual refresh when the business already has strong raw material.',
+                timeline: 'Best for teams fixing perception gaps',
+                focus: 'Pacing, hierarchy, trust density, and polish',
+                deliverables: [
+                  'Sharper authority signals and cleaner value explanation.',
+                  'A calmer, more expensive-looking section rhythm.',
+                  'Targeted upgrades without rebuilding every page from zero.',
+                ],
               ),
             ],
           ),

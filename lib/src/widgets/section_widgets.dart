@@ -1832,3 +1832,315 @@ class ContactSignalDeck extends StatelessWidget {
     );
   }
 }
+
+class InquiryModeData {
+  const InquiryModeData({
+    required this.label,
+    required this.title,
+    required this.timeline,
+    required this.focus,
+    required this.deliverables,
+  });
+
+  final String label;
+  final String title;
+  final String timeline;
+  final String focus;
+  final List<String> deliverables;
+}
+
+class InquiryModeLab extends StatefulWidget {
+  const InquiryModeLab({
+    super.key,
+    required this.modes,
+  });
+
+  final List<InquiryModeData> modes;
+
+  @override
+  State<InquiryModeLab> createState() => _InquiryModeLabState();
+}
+
+class _InquiryModeLabState extends State<InquiryModeLab> {
+  int _selectedIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = widget.modes[_selectedIndex];
+
+    return Container(
+      padding: const EdgeInsets.all(26),
+      decoration: BoxDecoration(
+        color: const Color(0xFF162235),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: AppTheme.lineLight),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (var i = 0; i < widget.modes.length; i++)
+                _ModeChip(
+                  label: widget.modes[i].label,
+                  selected: _selectedIndex == i,
+                  onTap: () => setState(() => _selectedIndex = i),
+                ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 240),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            child: Container(
+              key: ValueKey(selected.label),
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF1E2B41), Color(0xFF162235)],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppTheme.lineLight),
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final compact = constraints.maxWidth < 860;
+                  final insight = [
+                    _ModeMetric(label: 'Timeline', value: selected.timeline),
+                    _ModeMetric(label: 'Focus', value: selected.focus),
+                  ];
+
+                  return compact
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _ModeSummary(selected: selected),
+                            const SizedBox(height: 18),
+                            ...insight,
+                            const SizedBox(height: 18),
+                            _ModeDeliverables(items: selected.deliverables),
+                          ],
+                        )
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 4,
+                              child: _ModeSummary(selected: selected),
+                            ),
+                            const SizedBox(width: 18),
+                            Expanded(
+                              flex: 3,
+                              child: Column(children: insight),
+                            ),
+                            const SizedBox(width: 18),
+                            Expanded(
+                              flex: 4,
+                              child: _ModeDeliverables(items: selected.deliverables),
+                            ),
+                          ],
+                        );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModeChip extends StatefulWidget {
+  const _ModeChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  State<_ModeChip> createState() => _ModeChipState();
+}
+
+class _ModeChipState extends State<_ModeChip> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: widget.selected
+                ? AppTheme.accent.withValues(alpha: 0.16)
+                : Colors.white.withValues(alpha: _hovered ? 0.07 : 0.03),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: widget.selected ? AppTheme.accent.withValues(alpha: 0.32) : AppTheme.lineLight,
+            ),
+          ),
+          child: Text(
+            widget.label,
+            style: TextStyle(
+              color: widget.selected ? AppTheme.accentSoft : AppTheme.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ModeSummary extends StatelessWidget {
+  const _ModeSummary({required this.selected});
+
+  final InquiryModeData selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          selected.title,
+          style: const TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 30,
+            height: 1.06,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          'This gives the conversation a clearer starting point before the full scope is shaped.',
+          style: TextStyle(
+            color: AppTheme.textMuted,
+            fontSize: 15,
+            height: 1.65,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ModeMetric extends StatelessWidget {
+  const _ModeMetric({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppTheme.lineLight),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: const TextStyle(
+              color: AppTheme.textMuted,
+              fontSize: 11,
+              letterSpacing: 1,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              color: AppTheme.accentSoft,
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModeDeliverables extends StatelessWidget {
+  const _ModeDeliverables({required this.items});
+
+  final List<String> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppTheme.lineLight),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Included signals',
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
+          for (final item in items) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.only(top: 6),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppTheme.accentStrong,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    item,
+                    style: const TextStyle(
+                      color: AppTheme.textMuted,
+                      fontSize: 14,
+                      height: 1.6,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (item != items.last) const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+}

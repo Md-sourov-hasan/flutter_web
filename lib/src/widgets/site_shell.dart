@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -97,6 +98,9 @@ class _SiteShellFrame extends StatefulWidget {
 class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProviderStateMixin {
   late final AnimationController _ambientController;
   bool _navVisible = true;
+  bool _pointerVisible = false;
+  Offset _pointerPosition = Offset.zero;
+  double _scrollProgress = 0;
 
   @override
   void initState() {
@@ -107,20 +111,28 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
     )..forward();
   }
 
-  bool _handleScrollNotification(UserScrollNotification notification) {
+  bool _handleScrollNotification(ScrollNotification notification) {
     if (notification.depth != 0) {
       return false;
     }
 
-    if (notification.metrics.pixels <= 8) {
-      _setNavVisible(true);
-      return false;
+    final maxScrollExtent = notification.metrics.maxScrollExtent;
+    final nextProgress = maxScrollExtent <= 0 ? 0.0 : (notification.metrics.pixels / maxScrollExtent).clamp(0.0, 1.0);
+    if ((nextProgress - _scrollProgress).abs() > 0.001 && mounted) {
+      setState(() => _scrollProgress = nextProgress);
     }
 
-    if (notification.direction == ScrollDirection.forward) {
-      _setNavVisible(true);
-    } else if (notification.direction == ScrollDirection.reverse) {
-      _setNavVisible(false);
+    if (notification is UserScrollNotification) {
+      if (notification.metrics.pixels <= 8) {
+        _setNavVisible(true);
+        return false;
+      }
+
+      if (notification.direction == ScrollDirection.forward) {
+        _setNavVisible(true);
+      } else if (notification.direction == ScrollDirection.reverse) {
+        _setNavVisible(false);
+      }
     }
 
     return false;
@@ -133,6 +145,25 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
     setState(() => _navVisible = visible);
   }
 
+  void _handlePointerHover(PointerHoverEvent event) {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _pointerVisible = true;
+      _pointerPosition = event.localPosition;
+    });
+  }
+
+  void _handlePointerExit(PointerExitEvent event) {
+    if (!_pointerVisible || !mounted) {
+      return;
+    }
+
+    setState(() => _pointerVisible = false);
+  }
+
   @override
   void dispose() {
     _ambientController.dispose();
@@ -141,151 +172,462 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppTheme.background, AppTheme.backgroundSoft],
-          ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(0.88, -0.92),
-                        radius: 0.34,
-                        colors: [
-                          widget.primaryGlow.withValues(alpha: 0.26),
-                          widget.primaryGlow.withValues(alpha: 0.0),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(-0.95, -0.1),
-                        radius: 0.28,
-                        colors: [
-                          widget.secondaryGlow.withValues(alpha: 0.21),
-                          widget.secondaryGlow.withValues(alpha: 0.0),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: _AmbientMotionLayer(
-                    animation: _ambientController,
-                  ),
-                ),
-              ),
-              Positioned(
-                top: -140,
-                right: -60,
-                child: AnimatedBuilder(
-                  animation: _ambientController,
-                  builder: (context, child) {
-                    final y = math.sin(_ambientController.value * math.pi * 2) * 20;
-                    return Transform.translate(
-                      offset: Offset(0, y),
-                      child: child,
-                    );
-                  },
-                  child: _GlowOrb(
-                    size: 320,
-                    colors: [
-                      widget.primaryGlow.withValues(alpha: 0.28),
-                      widget.primaryGlow.withValues(alpha: 0.0),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                left: -100,
-                top: 220,
-                child: AnimatedBuilder(
-                  animation: _ambientController,
-                  builder: (context, child) {
-                    final y = math.cos(_ambientController.value * math.pi * 2) * 16;
-                    return Transform.translate(
-                      offset: Offset(0, y),
-                      child: child,
-                    );
-                  },
-                  child: _GlowOrb(
-                    size: 240,
-                    colors: [
-                      widget.secondaryGlow.withValues(alpha: 0.15),
-                      widget.secondaryGlow.withValues(alpha: 0.0),
-                    ],
-                  ),
-                ),
-              ),
-              NotificationListener<UserScrollNotification>(
-                onNotification: _handleScrollNotification,
-                child: Column(
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 240),
-                      reverseDuration: const Duration(milliseconds: 200),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
-                      transitionBuilder: (child, animation) {
-                        final offsetAnimation = Tween<Offset>(
-                          begin: const Offset(0, -0.18),
-                          end: Offset.zero,
-                        ).animate(animation);
+    final currentLabel = SiteShell.navItems
+        .firstWhere(
+          (item) => item.route == widget.currentRoute,
+          orElse: () => SiteShell.navItems.first,
+        )
+        .label;
+    final wideLayout = MediaQuery.sizeOf(context).width > 1180;
 
-                        return FadeTransition(
-                          opacity: animation,
-                          child: SizeTransition(
-                            sizeFactor: animation,
-                            axisAlignment: -1,
-                            child: SlideTransition(
-                              position: offsetAnimation,
-                              child: child,
+    return Scaffold(
+      body: MouseRegion(
+        onHover: _handlePointerHover,
+        onExit: _handlePointerExit,
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [AppTheme.background, AppTheme.backgroundSoft],
+            ),
+          ),
+          child: SafeArea(
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: const Alignment(0.88, -0.92),
+                          radius: 0.34,
+                          colors: [
+                            widget.primaryGlow.withValues(alpha: 0.26),
+                            widget.primaryGlow.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: const Alignment(-0.95, -0.1),
+                          radius: 0.28,
+                          colors: [
+                            widget.secondaryGlow.withValues(alpha: 0.21),
+                            widget.secondaryGlow.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: _AmbientMotionLayer(
+                      animation: _ambientController,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: -140,
+                  right: -60,
+                  child: AnimatedBuilder(
+                    animation: _ambientController,
+                    builder: (context, child) {
+                      final y = math.sin(_ambientController.value * math.pi * 2) * 20;
+                      return Transform.translate(
+                        offset: Offset(0, y),
+                        child: child,
+                      );
+                    },
+                    child: _GlowOrb(
+                      size: 320,
+                      colors: [
+                        widget.primaryGlow.withValues(alpha: 0.28),
+                        widget.primaryGlow.withValues(alpha: 0.0),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -100,
+                  top: 220,
+                  child: AnimatedBuilder(
+                    animation: _ambientController,
+                    builder: (context, child) {
+                      final y = math.cos(_ambientController.value * math.pi * 2) * 16;
+                      return Transform.translate(
+                        offset: Offset(0, y),
+                        child: child,
+                      );
+                    },
+                    child: _GlowOrb(
+                      size: 240,
+                      colors: [
+                        widget.secondaryGlow.withValues(alpha: 0.15),
+                        widget.secondaryGlow.withValues(alpha: 0.0),
+                      ],
+                    ),
+                  ),
+                ),
+                NotificationListener<ScrollNotification>(
+                  onNotification: _handleScrollNotification,
+                  child: Column(
+                    children: [
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 240),
+                        reverseDuration: const Duration(milliseconds: 200),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, animation) {
+                          final offsetAnimation = Tween<Offset>(
+                            begin: const Offset(0, -0.18),
+                            end: Offset.zero,
+                          ).animate(animation);
+
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SizeTransition(
+                              sizeFactor: animation,
+                              axisAlignment: -1,
+                              child: SlideTransition(
+                                position: offsetAnimation,
+                                child: child,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                      child: _navVisible
-                          ? Padding(
-                              key: const ValueKey('nav-visible'),
-                              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-                              child: Center(
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 1180),
-                                  child: Material(
-                                    type: MaterialType.transparency,
-                                    child: _TopNavigation(currentRoute: widget.currentRoute),
+                          );
+                        },
+                        child: _navVisible
+                            ? Padding(
+                                key: const ValueKey('nav-visible'),
+                                padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                                child: Center(
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(maxWidth: 1180),
+                                    child: Material(
+                                      type: MaterialType.transparency,
+                                      child: _TopNavigation(currentRoute: widget.currentRoute),
+                                    ),
                                   ),
                                 ),
+                              )
+                            : const SizedBox(
+                                key: ValueKey('nav-hidden'),
                               ),
-                            )
-                          : const SizedBox(
-                              key: ValueKey('nav-hidden'),
-                            ),
+                      ),
+                      Expanded(child: widget.content),
+                    ],
+                  ),
+                ),
+                if (wideLayout)
+                  Positioned(
+                    left: 18,
+                    top: 132,
+                    bottom: 34,
+                    child: _ScrollProgressRail(
+                      progress: _scrollProgress,
+                      routeLabel: currentLabel,
                     ),
-                    Expanded(child: widget.content),
+                  ),
+                Positioned(
+                  right: 18,
+                  bottom: 18,
+                  child: _RouteSignalDock(
+                    currentRoute: widget.currentRoute,
+                    currentLabel: currentLabel,
+                    progress: _scrollProgress,
+                  ),
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: _PointerAura(
+                      visible: _pointerVisible && wideLayout,
+                      position: _pointerPosition,
+                      color: widget.primaryGlow,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScrollProgressRail extends StatelessWidget {
+  const _ScrollProgressRail({
+    required this.progress,
+    required this.routeLabel,
+  });
+
+  final double progress;
+  final String routeLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        RotatedBox(
+          quarterTurns: 3,
+          child: Text(
+            routeLabel.toUpperCase(),
+            style: const TextStyle(
+              color: AppTheme.textDarkMuted,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.4,
+            ),
+          ),
+        ),
+        const SizedBox(height: 18),
+        Expanded(
+          child: Container(
+            width: 18,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.28),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: AppTheme.lineDark),
+            ),
+            child: Align(
+              alignment: Alignment(0, (progress * 2) - 1),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 8,
+                height: 64,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(999),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [AppTheme.accentStrong, AppTheme.accent],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.accent.withValues(alpha: 0.34),
+                      blurRadius: 18,
+                    ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
+        const SizedBox(height: 12),
+        Text(
+          '${(progress * 100).round()}%',
+          style: const TextStyle(
+            color: AppTheme.textDark,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RouteSignalDock extends StatelessWidget {
+  const _RouteSignalDock({
+    required this.currentRoute,
+    required this.currentLabel,
+    required this.progress,
+  });
+
+  final String currentRoute;
+  final String currentLabel;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xD9162235),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppTheme.lineLight),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x2607111F),
+            blurRadius: 26,
+            offset: Offset(0, 16),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.accentStrong,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  currentLabel,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Scroll sync ${(progress * 100).round()}%',
+              style: const TextStyle(
+                color: AppTheme.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final item in SiteShell.navItems)
+                  _DockRouteChip(
+                    label: item.label,
+                    selected: currentRoute == item.route,
+                    onTap: () => navigateToRoute(context, item.route),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DockRouteChip extends StatefulWidget {
+  const _DockRouteChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  State<_DockRouteChip> createState() => _DockRouteChipState();
+}
+
+class _DockRouteChipState extends State<_DockRouteChip> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+          decoration: BoxDecoration(
+            color: widget.selected
+                ? AppTheme.accent.withValues(alpha: 0.16)
+                : Colors.white.withValues(alpha: _hovered ? 0.07 : 0.03),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: widget.selected ? AppTheme.accent.withValues(alpha: 0.34) : AppTheme.lineLight,
+            ),
+          ),
+          child: Text(
+            widget.label,
+            style: TextStyle(
+              color: widget.selected ? AppTheme.accentSoft : AppTheme.textPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PointerAura extends StatelessWidget {
+  const _PointerAura({
+    required this.visible,
+    required this.position,
+    required this.color,
+  });
+
+  final bool visible;
+  final Offset position;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      opacity: visible ? 1 : 0,
+      duration: const Duration(milliseconds: 140),
+      child: Stack(
+        children: [
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 90),
+            curve: Curves.easeOutCubic,
+            left: position.dx - 110,
+            top: position.dy - 110,
+            child: Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    color.withValues(alpha: 0.14),
+                    color.withValues(alpha: 0.04),
+                    color.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 60),
+            curve: Curves.easeOut,
+            left: position.dx - 7,
+            top: position.dy - 7,
+            child: Container(
+              width: 14,
+              height: 14,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppTheme.accentStrong.withValues(alpha: 0.9),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.accent.withValues(alpha: 0.34),
+                    blurRadius: 14,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
