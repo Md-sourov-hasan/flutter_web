@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 class AppTheme {
   static const background = Color(0xFFF8F2E8);
   static const backgroundSoft = Color(0xFFE7DED0);
+  static const backgroundDeep = Color(0xFFDCCDB8);
   static const panel = Color(0xFF162235);
+  static const panelSoft = Color(0xFF22314A);
   static const surface = Color(0xFFF8F4EC);
   static const surfaceAlt = Color(0xFFEFE6D8);
   static const accent = Color(0xFFFF9D5C);
   static const accentStrong = Color(0xFFFFD166);
   static const accentSoft = Color(0xFFFFE1BD);
+  static const accentMint = Color(0xFF8FE3C5);
+  static const accentRose = Color(0xFFFF8CAB);
   static const textPrimary = Color(0xFFE5EEF9);
   static const textMuted = Color(0xFF9FB0C7);
   static const textDark = Color(0xFF18212F);

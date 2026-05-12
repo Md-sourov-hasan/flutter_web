@@ -18,6 +18,11 @@ class HeroPanel extends StatelessWidget {
     this.rightDescription =
         'Strategy, page architecture, and a visual system that makes the business feel more valuable at first glance.',
     this.rightColors = const [Color(0x5CFFB067), Color(0xFF2B313E)],
+    this.quickSignals = const [
+      'Positioning-led structure',
+      'Visual hierarchy tuned',
+      'Launch-ready components',
+    ],
   });
 
   final String eyebrow;
@@ -31,6 +36,7 @@ class HeroPanel extends StatelessWidget {
   final String rightEyebrow;
   final String rightDescription;
   final List<Color> rightColors;
+  final List<String> quickSignals;
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +89,14 @@ class HeroPanel extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 28),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  for (final signal in quickSignals) _HeroSignalChip(label: signal),
+                ],
+              ),
             ],
           ),
         );
@@ -110,7 +124,35 @@ class HeroPanel extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              PillLabel(label: rightEyebrow),
+              Row(
+                children: [
+                  PillLabel(label: rightEyebrow),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: const Color(0x33FFF1DD)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _LiveDot(),
+                        SizedBox(width: 8),
+                        Text(
+                          'System online',
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 20),
               Text(
                 rightDescription,
@@ -132,6 +174,32 @@ class HeroPanel extends StatelessWidget {
                 children: [
                   for (final metric in metrics) MetricCard(data: metric),
                 ],
+              ),
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: const Color(0x2AFFF1DD)),
+                ),
+                child: const Row(
+                  children: [
+                    Expanded(
+                      child: _HeroSummaryBlock(
+                        label: 'Focus',
+                        value: 'Trust + narrative pacing',
+                      ),
+                    ),
+                    SizedBox(width: 14),
+                    Expanded(
+                      child: _HeroSummaryBlock(
+                        label: 'Output',
+                        value: 'A cleaner premium feel',
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -155,6 +223,92 @@ class HeroPanel extends StatelessWidget {
                 ],
               );
       },
+    );
+  }
+}
+
+class _HeroSignalChip extends StatelessWidget {
+  const _HeroSignalChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppTheme.lineLight),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppTheme.textPrimary,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _LiveDot extends StatelessWidget {
+  const _LiveDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppTheme.accentMint,
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentMint.withValues(alpha: 0.4),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroSummaryBlock extends StatelessWidget {
+  const _HeroSummaryBlock({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppTheme.textMuted,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.7,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: const TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            height: 1.3,
+          ),
+        ),
+      ],
     );
   }
 }

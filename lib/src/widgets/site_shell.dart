@@ -234,6 +234,13 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
                     ),
                   ),
                 ),
+                const Positioned.fill(
+                  child: IgnorePointer(
+                    child: CustomPaint(
+                      painter: _GridOverlayPainter(),
+                    ),
+                  ),
+                ),
                 Positioned(
                   top: -140,
                   right: -60,
@@ -831,12 +838,25 @@ class _TopNavigation extends StatelessWidget {
             color: const Color(0xB8162235),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(color: AppTheme.lineLight),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x1D07111F),
+                blurRadius: 24,
+                offset: Offset(0, 16),
+              ),
+            ],
           ),
           child: compact
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _BrandLockup(),
+                    const Row(
+                      children: [
+                        Expanded(child: _BrandLockup()),
+                        SizedBox(width: 14),
+                        _TopStatusPill(),
+                      ],
+                    ),
                     const SizedBox(height: 18),
                     Wrap(
                       spacing: 10,
@@ -854,6 +874,9 @@ class _TopNavigation extends StatelessWidget {
               : Row(
                   children: [
                     const Expanded(child: _BrandLockup()),
+                    const SizedBox(width: 18),
+                    const _TopStatusPill(),
+                    const SizedBox(width: 18),
                     Wrap(
                       spacing: 10,
                       children: [
@@ -878,7 +901,6 @@ class _BrandLockup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 44,
@@ -900,27 +922,89 @@ class _BrandLockup extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Jasper Atelier',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.textPrimary,
+        const Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Jasper Atelier',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
               ),
-            ),
-            Text(
-              'Professional web systems',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppTheme.textMuted,
+              Text(
+                'Professional web systems',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.textMuted,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
+    );
+  }
+}
+
+class _TopStatusPill extends StatelessWidget {
+  const _TopStatusPill();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.accentSoft.withValues(alpha: 0.18),
+            AppTheme.accentMint.withValues(alpha: 0.08),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0x33FFE1BD)),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _PulseDot(),
+          SizedBox(width: 10),
+          Text(
+            'Live multipage preview',
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PulseDot extends StatelessWidget {
+  const _PulseDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 10,
+      height: 10,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppTheme.accentMint,
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentMint.withValues(alpha: 0.42),
+            blurRadius: 12,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -974,43 +1058,84 @@ class _FooterBand extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         border: Border.all(color: AppTheme.lineLight),
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final compact = constraints.maxWidth < 860;
-          final content = [
-            const _FooterBlock(
-              title: 'Jasper Atelier',
-              copy:
-                  'High-end multipage websites with stronger positioning, sharper visual systems, and cleaner launch structure.',
-            ),
-            const _FooterLinks(),
-            const _FooterBlock(
-              title: 'Direct',
-              copy: 'hello@jasperatelier.dev\nWhatsApp consultation available',
-            ),
-          ];
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: const [
+              _FooterTickerChip(label: 'Strategy-first build'),
+              _FooterTickerChip(label: 'Responsive layout system'),
+              _FooterTickerChip(label: 'Motion-aware routing'),
+            ],
+          ),
+          const SizedBox(height: 22),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 860;
+              final content = [
+                const _FooterBlock(
+                  title: 'Jasper Atelier',
+                  copy:
+                      'High-end multipage websites with stronger positioning, sharper visual systems, and cleaner launch structure.',
+                ),
+                const _FooterLinks(),
+                const _FooterBlock(
+                  title: 'Direct',
+                  copy: 'hello@jasperatelier.dev\nWhatsApp consultation available',
+                ),
+              ];
 
-          return compact
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (var i = 0; i < content.length; i++) ...[
-                      content[i],
-                      if (i != content.length - 1) const SizedBox(height: 18),
-                    ],
-                  ],
-                )
-              : Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: content[0]),
-                    const SizedBox(width: 22),
-                    Expanded(child: content[1]),
-                    const SizedBox(width: 22),
-                    Expanded(child: content[2]),
-                  ],
-                );
-        },
+              return compact
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (var i = 0; i < content.length; i++) ...[
+                          content[i],
+                          if (i != content.length - 1) const SizedBox(height: 18),
+                        ],
+                      ],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: content[0]),
+                        const SizedBox(width: 22),
+                        Expanded(child: content[1]),
+                        const SizedBox(width: 22),
+                        Expanded(child: content[2]),
+                      ],
+                    );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FooterTickerChip extends StatelessWidget {
+  const _FooterTickerChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppTheme.lineLight),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppTheme.textPrimary,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -1080,6 +1205,36 @@ class _GlowOrb extends StatelessWidget {
       ),
     );
   }
+}
+
+class _GridOverlayPainter extends CustomPainter {
+  const _GridOverlayPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final majorPaint = Paint()
+      ..color = AppTheme.panel.withValues(alpha: 0.05)
+      ..strokeWidth = 1;
+    final minorPaint = Paint()
+      ..color = AppTheme.panel.withValues(alpha: 0.025)
+      ..strokeWidth = 1;
+
+    const majorGap = 120.0;
+    const minorGap = 40.0;
+
+    for (double x = 0; x <= size.width; x += minorGap) {
+      final paint = x % majorGap == 0 ? majorPaint : minorPaint;
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+
+    for (double y = 0; y <= size.height; y += minorGap) {
+      final paint = y % majorGap == 0 ? majorPaint : minorPaint;
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _NavItem {
