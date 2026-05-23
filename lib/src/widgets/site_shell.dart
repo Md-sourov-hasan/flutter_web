@@ -302,7 +302,7 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
                             opacity: animation,
                             child: SizeTransition(
                               sizeFactor: animation,
-                              axisAlignment: -1,
+                              alignment: AlignmentDirectional.topStart,
                               child: SlideTransition(
                                 position: offsetAnimation,
                                 child: child,
@@ -595,7 +595,7 @@ class _PointerAura extends StatelessWidget {
       child: Stack(
         children: [
           AnimatedPositioned(
-            duration: const Duration(milliseconds: 90),
+            duration: const Duration(milliseconds: 120),
             curve: Curves.easeOutCubic,
             left: position.dx - 110,
             top: position.dy - 110,
@@ -615,8 +615,30 @@ class _PointerAura extends StatelessWidget {
             ),
           ),
           AnimatedPositioned(
-            duration: const Duration(milliseconds: 60),
-            curve: Curves.easeOut,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
+            left: position.dx - 20,
+            top: position.dy - 20,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppTheme.accentMint.withValues(alpha: 0.08),
+                border: Border.all(
+                  color: AppTheme.accentMint.withValues(alpha: 0.72),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.accentMint.withValues(alpha: 0.2),
+                    blurRadius: 18,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
             left: position.dx - 7,
             top: position.dy - 7,
             child: Container(
