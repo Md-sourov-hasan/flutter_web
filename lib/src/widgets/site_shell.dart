@@ -624,14 +624,14 @@ class _PointerAura extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.accentMint.withValues(alpha: 0.08),
+                color: AppTheme.accent.withValues(alpha: 0.08),
                 border: Border.all(
-                  color: AppTheme.accentMint.withValues(alpha: 0.72),
+                  color: AppTheme.accent.withValues(alpha: 0.72),
                   width: 1.2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.accentMint.withValues(alpha: 0.2),
+                    color: AppTheme.accent.withValues(alpha: 0.2),
                     blurRadius: 18,
                   ),
                 ],
@@ -986,7 +986,7 @@ class _TopStatusPill extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             AppTheme.accentSoft.withValues(alpha: 0.18),
-            AppTheme.accentMint.withValues(alpha: 0.08),
+            AppTheme.accentStrong.withValues(alpha: 0.08),
           ],
         ),
         borderRadius: BorderRadius.circular(999),
@@ -1021,10 +1021,10 @@ class _PulseDot extends StatelessWidget {
       height: 10,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppTheme.accentMint,
+        color: AppTheme.accentStrong,
         boxShadow: [
           BoxShadow(
-            color: AppTheme.accentMint.withValues(alpha: 0.42),
+            color: AppTheme.accentStrong.withValues(alpha: 0.42),
             blurRadius: 12,
           ),
         ],
