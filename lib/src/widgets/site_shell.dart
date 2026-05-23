@@ -234,10 +234,11 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
                     ),
                   ),
                 ),
-                const Positioned.fill(
+                Positioned.fill(
                   child: IgnorePointer(
-                    child: CustomPaint(
-                      painter: _GridOverlayPainter(),
+                    child: _ParticleFieldOverlay(
+                      pointerPosition: _pointerPosition,
+                      isPointerVisible: _pointerVisible,
                     ),
                   ),
                 ),
@@ -1266,4 +1267,184 @@ class _NavItem {
 
   final String label;
   final String route;
+}
+
+class _Particle {
+  _Particle({
+    required this.radius,
+    required this.angle,
+    required this.speed,
+    required this.color,
+    required this.size,
+  }) {
+    x = 0;
+    y = 0;
+  }
+
+  double radius;
+  double angle;
+  double speed;
+  Color color;
+  double size;
+
+  double x = 0;
+  double y = 0;
+  double vx = 0;
+  double vy = 0;
+}
+
+class _ParticleFieldOverlay extends StatefulWidget {
+  const _ParticleFieldOverlay({
+    required this.pointerPosition,
+    required this.isPointerVisible,
+  });
+
+  final Offset pointerPosition;
+  final bool isPointerVisible;
+
+  @override
+  State<_ParticleFieldOverlay> createState() => _ParticleFieldOverlayState();
+}
+
+class _ParticleFieldOverlayState extends State<_ParticleFieldOverlay> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  final List<_Particle> _particles = [];
+  final math.Random _random = math.Random();
+
+  final List<Color> _particleColors = [
+    const Color(0xFF4285F4),
+    const Color(0xFFEA4335),
+    const Color(0xFFFBBC05),
+    const Color(0xFF34A853),
+    const Color(0xFF9333EA),
+    const Color(0xFFFF9D5C),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    )..repeat();
+  }
+
+  void _initParticles(Size size) {
+    if (_particles.isNotEmpty) return;
+    final maxRadius = math.max(size.width, size.height) * 0.7;
+    for (int i = 0; i < 400; i++) {
+      final r = math.pow(_random.nextDouble(), 1.5) * maxRadius;
+      _particles.add(
+        _Particle(
+            radius: r + 20,
+            angle: _random.nextDouble() * math.pi * 2,
+            speed: (0.0005 + _random.nextDouble() * 0.002) * (_random.nextBool() ? 1 : -1),
+            color: _particleColors[_random.nextInt(_particleColors.length)],
+            size: _random.nextDouble() * 2.5 + 1.5,
+          )
+          ..x = (size.width / 2) + math.cos(0) * r
+          ..y = (size.height / 2) + math.sin(0) * r,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        _initParticles(size);
+
+        return AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            _updateParticles(size);
+            return CustomPaint(
+              size: size,
+              painter: _ParticlePainter(
+                particles: _particles,
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _updateParticles(Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final pointer = widget.pointerPosition;
+
+    for (final p in _particles) {
+      p.angle += p.speed;
+
+      final targetX = center.dx + math.cos(p.angle) * p.radius;
+      final targetY = center.dy + math.sin(p.angle) * p.radius;
+
+      double repelX = 0;
+      double repelY = 0;
+      if (widget.isPointerVisible) {
+        final dx = p.x - pointer.dx;
+        final dy = p.y - pointer.dy;
+        final distance = math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 250) {
+          final force = math.pow((250 - distance) / 250, 2).toDouble();
+          repelX = (dx / distance) * force * 18;
+          repelY = (dy / distance) * force * 18;
+        }
+      }
+
+      final springX = (targetX - p.x) * 0.06;
+      final springY = (targetY - p.y) * 0.06;
+
+      p.vx = (p.vx + springX + repelX) * 0.82;
+      p.vy = (p.vy + springY + repelY) * 0.82;
+
+      p.x += p.vx;
+      p.y += p.vy;
+    }
+  }
+}
+
+class _ParticlePainter extends CustomPainter {
+  _ParticlePainter({required this.particles});
+
+  final List<_Particle> particles;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final p in particles) {
+      final paint = Paint()
+        ..color = p.color.withValues(alpha: 0.75)
+        ..style = PaintingStyle.fill;
+
+      canvas.save();
+      canvas.translate(p.x, p.y);
+      var angle = 0.0;
+      if (p.vx.abs() > 0.1 || p.vy.abs() > 0.1) {
+        angle = math.atan2(p.vy, p.vx);
+      } else {
+        angle = p.angle + math.pi / 2;
+      }
+      canvas.rotate(angle);
+
+      final rect = RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset.zero, width: p.size * 2.5, height: p.size * 0.8),
+        const Radius.circular(2),
+      );
+      canvas.drawRRect(rect, paint);
+
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ParticlePainter oldDelegate) => true;
 }
