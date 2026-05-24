@@ -7,6 +7,7 @@ class SiteRouteArguments {
 }
 
 const List<String> siteRouteOrder = <String>[
+  '/intro',
   '/',
   '/services',
   '/work',

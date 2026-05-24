@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'navigation/site_navigation.dart';
 import 'pages/contact_page.dart';
+import 'pages/entry_page.dart';
 import 'pages/home_page.dart';
 import 'pages/services_page.dart';
 import 'pages/work_page.dart';
@@ -44,10 +45,10 @@ class _JasperAtelierAppState extends State<JasperAtelierApp> {
       debugShowCheckedModeBanner: false,
       title: 'Jasper Atelier',
       theme: AppTheme.theme,
-      initialRoute: HomePage.routeName,
+      initialRoute: EntryPage.routeName,
       onGenerateRoute: _onGenerateRoute,
       onUnknownRoute: (settings) => _buildRoute(
-        settings: const RouteSettings(name: HomePage.routeName),
+        settings: const RouteSettings(name: EntryPage.routeName),
       ),
       builder: (context, child) {
         return Stack(
@@ -85,6 +86,7 @@ class _JasperAtelierAppState extends State<JasperAtelierApp> {
       transitionDuration: const Duration(milliseconds: 520),
       reverseTransitionDuration: const Duration(milliseconds: 420),
       pageBuilder: (context, animation, secondaryAnimation) => switch (routeName) {
+        EntryPage.routeName => const EntryPage(),
         ServicesPage.routeName => const ServicesPage(),
         WorkPage.routeName => const WorkPage(),
         ContactPage.routeName => const ContactPage(),

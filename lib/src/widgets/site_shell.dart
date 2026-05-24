@@ -78,18 +78,54 @@ class SiteShell extends StatelessWidget {
   }
 }
 
+class SiteBackdropFrame extends StatelessWidget {
+  const SiteBackdropFrame({
+    super.key,
+    required this.child,
+    this.routeName = '/entry',
+    this.routeLabel = 'Entry',
+    this.primaryGlow = const Color(0xFFFFB067),
+    this.secondaryGlow = const Color(0xFFB5683B),
+  });
+
+  final Widget child;
+  final String routeName;
+  final String routeLabel;
+  final Color primaryGlow;
+  final Color secondaryGlow;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SiteShellFrame(
+      currentRoute: routeName,
+      primaryGlow: primaryGlow,
+      secondaryGlow: secondaryGlow,
+      routeLabelOverride: routeLabel,
+      showNavigation: false,
+      showProgressDecorations: false,
+      content: child,
+    );
+  }
+}
+
 class _SiteShellFrame extends StatefulWidget {
   const _SiteShellFrame({
     required this.currentRoute,
     required this.primaryGlow,
     required this.secondaryGlow,
     required this.content,
+    this.routeLabelOverride,
+    this.showNavigation = true,
+    this.showProgressDecorations = true,
   });
 
   final String currentRoute;
   final Color primaryGlow;
   final Color secondaryGlow;
   final Widget content;
+  final String? routeLabelOverride;
+  final bool showNavigation;
+  final bool showProgressDecorations;
 
   @override
   State<_SiteShellFrame> createState() => _SiteShellFrameState();
@@ -172,12 +208,14 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
 
   @override
   Widget build(BuildContext context) {
-    final currentLabel = SiteShell.navItems
-        .firstWhere(
-          (item) => item.route == widget.currentRoute,
-          orElse: () => SiteShell.navItems.first,
-        )
-        .label;
+    final currentLabel =
+        widget.routeLabelOverride ??
+        SiteShell.navItems
+            .firstWhere(
+              (item) => item.route == widget.currentRoute,
+              orElse: () => const _NavItem('Page', '/'),
+            )
+            .label;
     final wideLayout = MediaQuery.sizeOf(context).width > 1180;
 
     return Scaffold(
@@ -288,52 +326,53 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
                   onNotification: _handleScrollNotification,
                   child: Column(
                     children: [
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 240),
-                        reverseDuration: const Duration(milliseconds: 200),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
-                        transitionBuilder: (child, animation) {
-                          final offsetAnimation = Tween<Offset>(
-                            begin: const Offset(0, -0.18),
-                            end: Offset.zero,
-                          ).animate(animation);
+                      if (widget.showNavigation)
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 240),
+                          reverseDuration: const Duration(milliseconds: 200),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          transitionBuilder: (child, animation) {
+                            final offsetAnimation = Tween<Offset>(
+                              begin: const Offset(0, -0.18),
+                              end: Offset.zero,
+                            ).animate(animation);
 
-                          return FadeTransition(
-                            opacity: animation,
+                            return FadeTransition(
+                              opacity: animation,
                               child: SizeTransition(
                                 sizeFactor: animation,
                                 axisAlignment: -1.0,
                                 child: SlideTransition(
-                                position: offsetAnimation,
-                                child: child,
+                                  position: offsetAnimation,
+                                  child: child,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                        child: _navVisible
-                            ? Padding(
-                                key: const ValueKey('nav-visible'),
-                                padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-                                child: Center(
-                                  child: ConstrainedBox(
-                                    constraints: const BoxConstraints(maxWidth: 1180),
-                                    child: Material(
-                                      type: MaterialType.transparency,
-                                      child: _TopNavigation(currentRoute: widget.currentRoute),
+                            );
+                          },
+                          child: _navVisible
+                              ? Padding(
+                                  key: const ValueKey('nav-visible'),
+                                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                                  child: Center(
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 1180),
+                                      child: Material(
+                                        type: MaterialType.transparency,
+                                        child: _TopNavigation(currentRoute: widget.currentRoute),
+                                      ),
                                     ),
                                   ),
+                                )
+                              : const SizedBox(
+                                  key: ValueKey('nav-hidden'),
                                 ),
-                              )
-                            : const SizedBox(
-                                key: ValueKey('nav-hidden'),
-                              ),
-                      ),
+                        ),
                       Expanded(child: widget.content),
                     ],
                   ),
                 ),
-                if (wideLayout)
+                if (wideLayout && widget.showProgressDecorations)
                   Positioned(
                     left: 18,
                     top: 132,
@@ -343,15 +382,16 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
                       routeLabel: currentLabel,
                     ),
                   ),
-                Positioned(
-                  right: 18,
-                  bottom: 18,
-                  child: _RouteSignalDock(
-                    currentRoute: widget.currentRoute,
-                    currentLabel: currentLabel,
-                    progress: _scrollProgress,
+                if (widget.showProgressDecorations)
+                  Positioned(
+                    right: 18,
+                    bottom: 18,
+                    child: _RouteSignalDock(
+                      currentRoute: widget.currentRoute,
+                      currentLabel: currentLabel,
+                      progress: _scrollProgress,
+                    ),
                   ),
-                ),
                 Positioned.fill(
                   child: IgnorePointer(
                     child: _PointerAura(
