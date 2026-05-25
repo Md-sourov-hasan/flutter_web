@@ -656,7 +656,7 @@ class _PointerAura extends StatelessWidget {
             ),
           ),
           AnimatedPositioned(
-            duration: const Duration(milliseconds: 400),
+            duration: const Duration(milliseconds: 800),
             curve: Curves.easeOutCubic,
             left: position.dx - 20,
             top: position.dy - 20,
