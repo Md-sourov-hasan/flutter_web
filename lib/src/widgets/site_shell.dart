@@ -636,8 +636,8 @@ class _PointerAura extends StatelessWidget {
       child: Stack(
         children: [
           AnimatedPositioned(
-            duration: const Duration(milliseconds: 140),
-            curve: Curves.easeOutCubic,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutQuint,
             left: position.dx - 110,
             top: position.dy - 110,
             child: Container(
@@ -656,8 +656,8 @@ class _PointerAura extends StatelessWidget {
             ),
           ),
           AnimatedPositioned(
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.easeOutCubic,
+            duration: const Duration(milliseconds: 1200),
+            curve: Curves.easeOutQuint,
             left: position.dx - 20,
             top: position.dy - 20,
             child: Container(
@@ -680,8 +680,8 @@ class _PointerAura extends StatelessWidget {
             ),
           ),
           AnimatedPositioned(
-            duration: const Duration(milliseconds: 140),
-            curve: Curves.easeOutCubic,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutQuint,
             left: position.dx - 7,
             top: position.dy - 7,
             child: Container(
