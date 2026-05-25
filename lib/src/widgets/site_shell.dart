@@ -632,11 +632,11 @@ class _PointerAura extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedOpacity(
       opacity: visible ? 1 : 0,
-      duration: const Duration(milliseconds: 140),
+      duration: const Duration(milliseconds: 160),
       child: Stack(
         children: [
           AnimatedPositioned(
-            duration: const Duration(milliseconds: 120),
+            duration: const Duration(milliseconds: 140),
             curve: Curves.easeOutCubic,
             left: position.dx - 110,
             top: position.dy - 110,
@@ -680,8 +680,8 @@ class _PointerAura extends StatelessWidget {
             ),
           ),
           AnimatedPositioned(
-            duration: const Duration(milliseconds: 60),
-            curve: Curves.easeOut,
+            duration: const Duration(milliseconds: 140),
+            curve: Curves.easeOutCubic,
             left: position.dx - 7,
             top: position.dy - 7,
             child: Container(
