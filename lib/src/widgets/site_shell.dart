@@ -133,14 +133,15 @@ class _SiteShellFrame extends StatefulWidget {
 
 class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProviderStateMixin {
   late final AnimationController _ambientController;
+  late final ValueNotifier<_PointerState> _pointerNotifier;
+  late final ValueNotifier<double> _scrollProgressNotifier;
   bool _navVisible = true;
-  bool _pointerVisible = false;
-  Offset _pointerPosition = Offset.zero;
-  double _scrollProgress = 0;
 
   @override
   void initState() {
     super.initState();
+    _pointerNotifier = ValueNotifier(const _PointerState.hidden());
+    _scrollProgressNotifier = ValueNotifier(0);
     _ambientController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1800),
@@ -154,8 +155,8 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
 
     final maxScrollExtent = notification.metrics.maxScrollExtent;
     final nextProgress = maxScrollExtent <= 0 ? 0.0 : (notification.metrics.pixels / maxScrollExtent).clamp(0.0, 1.0);
-    if ((nextProgress - _scrollProgress).abs() > 0.001 && mounted) {
-      setState(() => _scrollProgress = nextProgress);
+    if ((nextProgress - _scrollProgressNotifier.value).abs() > 0.006) {
+      _scrollProgressNotifier.value = nextProgress;
     }
 
     if (notification is UserScrollNotification) {
@@ -186,23 +187,38 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
       return;
     }
 
-    setState(() {
-      _pointerVisible = true;
-      _pointerPosition = event.localPosition;
-    });
-  }
-
-  void _handlePointerExit(PointerExitEvent event) {
-    if (!_pointerVisible || !mounted) {
+    if (MediaQuery.sizeOf(context).width <= 1180) {
+      if (_pointerNotifier.value.visible) {
+        _pointerNotifier.value = const _PointerState.hidden();
+      }
       return;
     }
 
-    setState(() => _pointerVisible = false);
+    final current = _pointerNotifier.value;
+    final delta = event.localPosition - current.position;
+    if (current.visible && delta.distanceSquared < 64) {
+      return;
+    }
+
+    _pointerNotifier.value = _PointerState(
+      position: event.localPosition,
+      visible: true,
+    );
+  }
+
+  void _handlePointerExit(PointerExitEvent event) {
+    if (!_pointerNotifier.value.visible || !mounted) {
+      return;
+    }
+
+    _pointerNotifier.value = const _PointerState.hidden();
   }
 
   @override
   void dispose() {
     _ambientController.dispose();
+    _pointerNotifier.dispose();
+    _scrollProgressNotifier.dispose();
     super.dispose();
   }
 
@@ -267,16 +283,25 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
                 ),
                 Positioned.fill(
                   child: IgnorePointer(
-                    child: _AmbientMotionLayer(
-                      animation: _ambientController,
+                    child: RepaintBoundary(
+                      child: _AmbientMotionLayer(
+                        animation: _ambientController,
+                      ),
                     ),
                   ),
                 ),
                 Positioned.fill(
                   child: IgnorePointer(
-                    child: _ParticleFieldOverlay(
-                      pointerPosition: _pointerPosition,
-                      isPointerVisible: _pointerVisible,
+                    child: ValueListenableBuilder<_PointerState>(
+                      valueListenable: _pointerNotifier,
+                      builder: (context, pointerState, child) {
+                        return RepaintBoundary(
+                          child: _ParticleFieldOverlay(
+                            pointerPosition: pointerState.position,
+                            isPointerVisible: pointerState.visible,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -342,7 +367,7 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
                               opacity: animation,
                               child: SizeTransition(
                                 sizeFactor: animation,
-                                axisAlignment: -1.0,
+                                alignment: const Alignment(0, -1),
                                 child: SlideTransition(
                                   position: offsetAnimation,
                                   child: child,
@@ -377,27 +402,44 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
                     left: 18,
                     top: 132,
                     bottom: 34,
-                    child: _ScrollProgressRail(
-                      progress: _scrollProgress,
-                      routeLabel: currentLabel,
+                    child: ValueListenableBuilder<double>(
+                      valueListenable: _scrollProgressNotifier,
+                      builder: (context, progress, child) {
+                        return _ScrollProgressRail(
+                          progress: progress,
+                          routeLabel: currentLabel,
+                        );
+                      },
                     ),
                   ),
                 if (widget.showProgressDecorations)
                   Positioned(
                     right: 18,
                     bottom: 18,
-                    child: _RouteSignalDock(
-                      currentRoute: widget.currentRoute,
-                      currentLabel: currentLabel,
-                      progress: _scrollProgress,
+                    child: ValueListenableBuilder<double>(
+                      valueListenable: _scrollProgressNotifier,
+                      builder: (context, progress, child) {
+                        return _RouteSignalDock(
+                          currentRoute: widget.currentRoute,
+                          currentLabel: currentLabel,
+                          progress: progress,
+                        );
+                      },
                     ),
                   ),
                 Positioned.fill(
                   child: IgnorePointer(
-                    child: _PointerAura(
-                      visible: _pointerVisible && wideLayout,
-                      position: _pointerPosition,
-                      color: widget.primaryGlow,
+                    child: ValueListenableBuilder<_PointerState>(
+                      valueListenable: _pointerNotifier,
+                      builder: (context, pointerState, child) {
+                        return RepaintBoundary(
+                          child: _PointerAura(
+                            visible: pointerState.visible && wideLayout,
+                            position: pointerState.position,
+                            color: widget.primaryGlow,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -1272,41 +1314,23 @@ class _GlowOrb extends StatelessWidget {
   }
 }
 
-class _GridOverlayPainter extends CustomPainter {
-  const _GridOverlayPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final majorPaint = Paint()
-      ..color = AppTheme.panel.withValues(alpha: 0.05)
-      ..strokeWidth = 1;
-    final minorPaint = Paint()
-      ..color = AppTheme.panel.withValues(alpha: 0.025)
-      ..strokeWidth = 1;
-
-    const majorGap = 120.0;
-    const minorGap = 40.0;
-
-    for (double x = 0; x <= size.width; x += minorGap) {
-      final paint = x % majorGap == 0 ? majorPaint : minorPaint;
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-
-    for (double y = 0; y <= size.height; y += minorGap) {
-      final paint = y % majorGap == 0 ? majorPaint : minorPaint;
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
 class _NavItem {
   const _NavItem(this.label, this.route);
 
   final String label;
   final String route;
+}
+
+class _PointerState {
+  const _PointerState({
+    required this.position,
+    required this.visible,
+  });
+
+  const _PointerState.hidden() : position = Offset.zero, visible = false;
+
+  final Offset position;
+  final bool visible;
 }
 
 class _Particle {
@@ -1319,6 +1343,9 @@ class _Particle {
   }) {
     x = 0;
     y = 0;
+    paint = Paint()
+      ..color = color.withValues(alpha: 0.75)
+      ..style = PaintingStyle.fill;
   }
 
   double radius;
@@ -1326,6 +1353,7 @@ class _Particle {
   double speed;
   Color color;
   double size;
+  late final Paint paint;
 
   double x = 0;
   double y = 0;
@@ -1370,9 +1398,13 @@ class _ParticleFieldOverlayState extends State<_ParticleFieldOverlay> with Singl
   }
 
   void _initParticles(Size size) {
-    if (_particles.isNotEmpty) return;
+    if (_particles.isNotEmpty) {
+      return;
+    }
+
     final maxRadius = math.max(size.width, size.height) * 0.7;
-    for (int i = 0; i < 400; i++) {
+    final particleCount = ((size.width * size.height) / 12000).round().clamp(140, 220);
+    for (int i = 0; i < particleCount; i++) {
       final r = math.pow(_random.nextDouble(), 1.5) * maxRadius;
       _particles.add(
         _Particle(
@@ -1434,7 +1466,7 @@ class _ParticleFieldOverlayState extends State<_ParticleFieldOverlay> with Singl
         final dy = p.y - pointer.dy;
         final distance = math.sqrt(dx * dx + dy * dy);
 
-        if (distance < 250) {
+        if (distance > 0 && distance < 250) {
           final force = math.pow((250 - distance) / 250, 2).toDouble();
           repelX = (dx / distance) * force * 18;
           repelY = (dy / distance) * force * 18;
@@ -1461,10 +1493,6 @@ class _ParticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (final p in particles) {
-      final paint = Paint()
-        ..color = p.color.withValues(alpha: 0.75)
-        ..style = PaintingStyle.fill;
-
       canvas.save();
       canvas.translate(p.x, p.y);
       var angle = 0.0;
@@ -1479,7 +1507,7 @@ class _ParticlePainter extends CustomPainter {
         Rect.fromCenter(center: Offset.zero, width: p.size * 2.5, height: p.size * 0.8),
         const Radius.circular(2),
       );
-      canvas.drawRRect(rect, paint);
+      canvas.drawRRect(rect, p.paint);
 
       canvas.restore();
     }

@@ -2329,7 +2329,7 @@ class ComparisonWorkbench extends StatefulWidget {
 
 class _ComparisonWorkbenchState extends State<ComparisonWorkbench> {
   int _selectedIndex = 0;
-  double _split = 0.56;
+  double _split = 0.0;
 
   @override
   Widget build(BuildContext context) {
