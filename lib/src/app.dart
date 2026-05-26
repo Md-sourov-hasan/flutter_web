@@ -25,7 +25,7 @@ class _JasperAtelierAppState extends State<JasperAtelierApp> {
   @override
   void initState() {
     super.initState();
-    _bootTimer = Timer(const Duration(milliseconds: 950), () {
+    _bootTimer = Timer(const Duration(milliseconds: 2800), () {
       if (!mounted) {
         return;
       }
@@ -58,9 +58,9 @@ class _JasperAtelierAppState extends State<JasperAtelierApp> {
               ignoring: !_showBootOverlay,
               child: AnimatedOpacity(
                 opacity: _showBootOverlay ? 1 : 0,
-                duration: const Duration(milliseconds: 420),
+                duration: const Duration(milliseconds: 800),
                 curve: Curves.easeOutCubic,
-                child: const _BootOverlay(),
+                child: const RocketLaunchSplash(),
               ),
             ),
           ],
@@ -129,8 +129,56 @@ class _JasperAtelierAppState extends State<JasperAtelierApp> {
   }
 }
 
-class _BootOverlay extends StatelessWidget {
-  const _BootOverlay();
+class RocketLaunchSplash extends StatefulWidget {
+  const RocketLaunchSplash({super.key});
+
+  @override
+  State<RocketLaunchSplash> createState() => _RocketLaunchSplashState();
+}
+
+class _RocketLaunchSplashState extends State<RocketLaunchSplash> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _slideAnimation;
+  late final Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2600),
+    );
+
+    _slideAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 5.0).chain(CurveTween(curve: Curves.easeInOutSine)), weight: 5),
+      TweenSequenceItem(tween: Tween(begin: 5.0, end: -5.0).chain(CurveTween(curve: Curves.easeInOutSine)), weight: 5),
+      TweenSequenceItem(tween: Tween(begin: -5.0, end: 5.0).chain(CurveTween(curve: Curves.easeInOutSine)), weight: 5),
+      TweenSequenceItem(tween: Tween(begin: 5.0, end: -5.0).chain(CurveTween(curve: Curves.easeInOutSine)), weight: 5),
+      TweenSequenceItem(tween: Tween(begin: -5.0, end: 5.0).chain(CurveTween(curve: Curves.easeInOutSine)), weight: 5),
+      TweenSequenceItem(tween: Tween(begin: 5.0, end: 0.0).chain(CurveTween(curve: Curves.easeInOutSine)), weight: 5),
+      TweenSequenceItem(tween: ConstantTween(0.0), weight: 10),
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: -1200.0).chain(CurveTween(curve: Curves.easeInExpo)),
+        weight: 60,
+      ),
+    ]).animate(_controller);
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 40),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.0, end: 0.5).chain(CurveTween(curve: Curves.easeInExpo)),
+        weight: 60,
+      ),
+    ]).animate(_controller);
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,65 +187,88 @@ class _BootOverlay extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF101821), Color(0xFF162235), Color(0xFF0E141D)],
+          colors: [Color(0xFF070B14), Color(0xFF101825), Color(0xFF04060A)],
         ),
       ),
       child: Center(
-        child: Container(
-          width: 360,
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: const Color(0xD9162235),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: AppTheme.lineLight),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x2607111F),
-                blurRadius: 26,
-                offset: Offset(0, 16),
-              ),
-            ],
-          ),
-          child: const Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'JASPER ATELIER',
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.8,
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            final isLaunching = _controller.value > 0.4;
+            
+            return Transform.translate(
+              offset: Offset(0, _slideAnimation.value),
+              child: Transform.scale(
+                scale: _scaleAnimation.value,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Glow behind rocket
+                        AnimatedOpacity(
+                          duration: const Duration(milliseconds: 300),
+                          opacity: isLaunching ? 1.0 : 0.0,
+                          child: Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.orange.withOpacity(0.6),
+                                  blurRadius: 60,
+                                  spreadRadius: 20,
+                                ),
+                                BoxShadow(
+                                  color: Colors.redAccent.withOpacity(0.4),
+                                  blurRadius: 100,
+                                  spreadRadius: 40,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.rocket_launch_rounded,
+                          size: 100,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 30),
+                    AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: isLaunching ? 0.0 : 1.0,
+                      child: const Column(
+                        children: [
+                          Text(
+                            'JASPER ATELIER',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 4.0,
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            'Preparing for launch...',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 16,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 12),
-              Text(
-                'Booting premium web system...',
-                style: TextStyle(
-                  color: AppTheme.textMuted,
-                  fontSize: 15,
-                  height: 1.6,
-                ),
-              ),
-              SizedBox(height: 22),
-              LinearProgressIndicator(
-                minHeight: 6,
-                color: AppTheme.accentStrong,
-                backgroundColor: Color(0x331F2B41),
-                borderRadius: BorderRadius.all(Radius.circular(999)),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Routing modules, visual stack, and motion layer are coming online.',
-                style: TextStyle(
-                  color: AppTheme.textMuted,
-                  fontSize: 12,
-                  height: 1.6,
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

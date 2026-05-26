@@ -393,7 +393,7 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
                                   key: ValueKey('nav-hidden'),
                                 ),
                         ),
-                      Expanded(child: widget.content),
+                      Expanded(child: RepaintBoundary(child: widget.content)),
                     ],
                   ),
                 ),
@@ -1503,11 +1503,8 @@ class _ParticlePainter extends CustomPainter {
       }
       canvas.rotate(angle);
 
-      final rect = RRect.fromRectAndRadius(
-        Rect.fromCenter(center: Offset.zero, width: p.size * 2.5, height: p.size * 0.8),
-        const Radius.circular(2),
-      );
-      canvas.drawRRect(rect, p.paint);
+      final rect = Rect.fromCenter(center: Offset.zero, width: p.size * 2.5, height: p.size * 0.8);
+      canvas.drawRect(rect, p.paint);
 
       canvas.restore();
     }
