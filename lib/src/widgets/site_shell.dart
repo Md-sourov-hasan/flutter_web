@@ -366,10 +366,10 @@ class _SiteShellFrameState extends State<_SiteShellFrame> with SingleTickerProvi
 
                             return FadeTransition(
                               opacity: animation,
-                              child: SizeTransition(
-                                sizeFactor: animation,
-                                alignment: const Alignment(0, -1),
-                                child: SlideTransition(
+                                child: SizeTransition(
+                                  sizeFactor: animation,
+                                  axisAlignment: -1.0,
+                                  child: SlideTransition(
                                   position: offsetAnimation,
                                   child: child,
                                 ),
