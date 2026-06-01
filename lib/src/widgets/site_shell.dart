@@ -28,6 +28,7 @@ class SiteShell extends StatelessWidget {
     _NavItem('Home', '/'),
     _NavItem('Services', '/services'),
     _NavItem('Work', '/work'),
+    _NavItem('Reels', '/reels'),
     _NavItem('Contact', '/contact'),
   ];
 

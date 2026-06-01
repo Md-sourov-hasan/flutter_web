@@ -32,8 +32,8 @@ class HomePage extends StatelessWidget {
           MetricData('Flutter', 'Normal app entrypoint'),
         ],
       ),
-      sections: const [
-        SectionPanel(
+      sections: [
+        const SectionPanel(
           title: 'Built like a serious brand, not a template.',
           description:
               'Every block is shaped to increase trust, sharpen clarity, and make the whole offer feel more expensive on first view.',
@@ -62,7 +62,7 @@ class HomePage extends StatelessWidget {
             ],
           ),
         ),
-        SectionPanel(
+        const SectionPanel(
           title: 'From rough idea to premium digital presence.',
           description:
               'The build flow removes generic-looking choices and replaces them with stronger positioning, calmer hierarchy, and cleaner page pacing.',
@@ -91,13 +91,13 @@ class HomePage extends StatelessWidget {
             ],
           ),
         ),
-        SectionPanel(
+        const SectionPanel(
           title: 'A more editorial, more interactive front layer.',
           description:
               'This pass adds denser visual UI so the homepage feels more like a premium product surface and less like a plain section stack.',
           child: _ImmersiveShowcasePanel(),
         ),
-        SectionPanel(
+        const SectionPanel(
           title: 'Inside the build signal.',
           description:
               'A more custom project usually feels different because the internal decisions are sharper, faster, and far more intentional than a template workflow.',
@@ -130,14 +130,14 @@ class HomePage extends StatelessWidget {
             ],
           ),
         ),
-        SectionPanel(
+        const SectionPanel(
           title: 'What the new UI is doing at a glance.',
           description:
               'These smaller blocks make the interface feel newer by mixing dashboard cues, editorial pacing, and stronger visual contrast.',
           tinted: true,
           child: _MomentumBoard(),
         ),
-        CtaBand(
+        const CtaBand(
           title: 'Need a site that instantly looks more credible?',
           description:
               'Start with a proper Flutter multipage foundation that already feels premium, modern, and ready to scale.',

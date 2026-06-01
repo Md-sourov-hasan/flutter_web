@@ -6,6 +6,7 @@ import 'navigation/site_navigation.dart';
 import 'pages/contact_page.dart';
 import 'pages/entry_page.dart';
 import 'pages/home_page.dart';
+import 'pages/reels_page.dart';
 import 'pages/services_page.dart';
 import 'pages/work_page.dart';
 import 'theme/app_theme.dart';
@@ -89,6 +90,7 @@ class _JasperAtelierAppState extends State<JasperAtelierApp> {
         EntryPage.routeName => const EntryPage(),
         ServicesPage.routeName => const ServicesPage(),
         WorkPage.routeName => const WorkPage(),
+        ReelsPage.routeName => const ReelsPage(),
         ContactPage.routeName => const ContactPage(),
         _ => const HomePage(),
       },
@@ -195,7 +197,7 @@ class _RocketLaunchSplashState extends State<RocketLaunchSplash> with SingleTick
           animation: _controller,
           builder: (context, child) {
             final isLaunching = _controller.value > 0.4;
-            
+
             return Transform.translate(
               offset: Offset(0, _slideAnimation.value),
               child: Transform.scale(
@@ -217,12 +219,12 @@ class _RocketLaunchSplashState extends State<RocketLaunchSplash> with SingleTick
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.orange.withOpacity(0.6),
+                                  color: Colors.orange.withValues(alpha: 0.6),
                                   blurRadius: 60,
                                   spreadRadius: 20,
                                 ),
                                 BoxShadow(
-                                  color: Colors.redAccent.withOpacity(0.4),
+                                  color: Colors.redAccent.withValues(alpha: 0.4),
                                   blurRadius: 100,
                                   spreadRadius: 40,
                                 ),

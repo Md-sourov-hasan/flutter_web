@@ -11,6 +11,7 @@ const List<String> siteRouteOrder = <String>[
   '/',
   '/services',
   '/work',
+  '/reels',
   '/contact',
 ];
 
