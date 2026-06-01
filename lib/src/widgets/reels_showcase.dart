@@ -548,6 +548,11 @@ class ReelClipData {
     required this.videoUrl,
     required this.accentColor,
     required this.tag,
+    this.caption,
+    this.audioLabel,
+    this.likeCount = '0',
+    this.commentCount = '0',
+    this.shareCount = '0',
   });
 
   final String title;
@@ -556,4 +561,9 @@ class ReelClipData {
   final String videoUrl;
   final Color accentColor;
   final String tag;
+  final String? caption;
+  final String? audioLabel;
+  final String likeCount;
+  final String commentCount;
+  final String shareCount;
 }
